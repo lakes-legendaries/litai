@@ -40,19 +40,27 @@ jobs:
             sed s/$OLD_VERSION/$NEW_VERSION/g $file -i
             git add $file
         done
-        git commit -m "Release $NEW_VERSION [no ci]"
+        git commit -m "Release $NEW_VERSION"
+        git tag | grep -w $NEW_VERSION && git tag -d $NEW_VERSION
         git tag $NEW_VERSION
     - name: Update documentation
       run: |
         docsrc/build
-    - name: Push code
+    - name: Push to main
       run: |
-        git push origin actions:actions
         git push origin actions:main -f
+    - name: Push tag
+      run: |
         VERSION=$(grep version setup.py | grep -Po "\d+.\d+.\d+")
+        git ls-remote --tags | grep -w refs/tags/$VERSION && git push --delete origin $VERSION
         git push origin $VERSION
+    - name: Push to actions
+      run: |
+        git commit --allow-empty -m "[no ci]"
+        git push origin actions:actions
     - name: Publish docs to GitHub pages (docs branch)
       run: |
+        git checkout main
         git add docs -f
         git commit docs -m "Updating Documentation"
         git push origin actions:docs -f
