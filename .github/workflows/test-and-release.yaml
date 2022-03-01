@@ -6,7 +6,7 @@ on:
       - actions
 
 jobs:
-  main:
+  test-and-release:
     runs-on: ubuntu-latest
     environment: actions
     steps:
