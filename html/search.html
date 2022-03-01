@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<html>
+
+<head>
+    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:wght@300&display=swap" rel="stylesheet">
+    <script src="litai.js"></script>
+</head>
+<body>
+
+<!-- Search Box -->
+<div class="centered">
+<div class="boxed"> 
+<div class="padding">
+<p class="h1">LitAI</p>
+<p class="h2">AI-Powered Literature Search</p>
+<center>
+    
+    <!-- Keywords -->
+    <input type="text" name="keywords" id="keywords" placeholder="Keywords">
+    <br />
+
+    <!-- Date -->
+    <input type="text" name="min_date" id="min_date" placeholder="Since (YYYY-MM-DD)">
+    <br />
+
+    <!-- Table -->
+    <input type="radio" id="senescence" name="table" value="senescence" checked="checked">
+    <label for="senescence" class="p1">Senescence Table</label><br>
+    <input type="radio" id="hbot" name="table" value="hbot">
+    <label for="hbot" class="p1">Hyperbaric O<sub>2</sub> Table</label><br>
+
+    <!-- Search Button -->
+    <button class="button" onclick="query_api()">
+        Search
+    </button>
+    <br />
+</center>
+</div>
+</div>
+</div>
+
+<!-- Results -->
+<div class="centered">
+<div class="boxed" id="results-box" style="display: none">
+<div class="padding">
+<div id="results">
+</div>
+</div>
+</div>
+</div>
+
+<!-- Attribution -->
+<p class="p3">Developed by Michael Powell PhD</p>
+<p class="p3">Copyright &copy; 2022 Lake's Legendaries LLC</p>
+
+</body>
+
+</html>

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for FILE in $(ls config/); do
+    echo "Processing $FILE"
+    python litai/score.py config/$FILE
+done

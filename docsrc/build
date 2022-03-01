@@ -1,0 +1,6 @@
+#!/bin/bash
+
+rm -rfd docs
+mkdir docs
+sphinx-build docsrc docs &> /dev/null
+touch docs/.nojekyll

@@ -1,0 +1,11 @@
+/*.egg-info
+/**/__pycache__
+/.dockerkey
+/.ezazure
+/.venv*
+/.vscode
+/build
+/data/*
+/docs
+/pubmed*
+!/**/.gitkeep

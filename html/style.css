@@ -1,0 +1,95 @@
+/* variables */
+:root {
+    --color-std: #00008B;
+    --color-emphasis: #ADD8E6;
+    --color-fill: #e7e7e7;
+    --color-bg: #808080;
+    --color-box: #F5F5F5;
+    --max-width: 780px;
+    --margin-std: 50px;
+    --margin-tight: 10px;
+    --font-family: "Roboto Serif";
+    --font-size-h1: 40px;
+    --font-size-h2: 20px;
+    --font-size-p1: 15px;
+    --font-size-p2: 12px;
+    --font-size-p3: 10px;
+    --input-height: 12px;
+    --input-width: 20px;
+  }
+
+/* divs */
+div.centered {
+    margin: 0 auto;
+    max-width: var(--max-width);
+}
+
+div.boxed, div.padding {
+    max-width: var(--max-width);
+    margin-top: var(--margin-std);
+    margin-bottom: var(--margin-std);
+    margin-right: var(--margin-std);
+    margin-left: var(--margin-std);
+    background-color: var(--color-box);
+}
+
+div.boxed {border: 3px solid var(--color-std);}
+
+div.attribution {
+    position: absolute;
+    bottom: 5px;
+    width: 300px;
+    height: 100px;
+}
+
+/* text */
+.h1, .h2, .p1, .p2, .p3 {
+    font-family: var(--font-family);
+    color: var(--color-std);
+}
+
+.h1, .h2 {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: var(--font-size-h2);
+}
+
+.h1 {font-size: var(--font-size-h1);}
+.h2 {font-size: var(--font-size-h2);}
+.p1 {font-size: var(--font-size-p1);}
+.p2 {font-size: var(--font-size-p2);}
+.p3 {font-size: var(--font-size-p3);}
+
+/* forms */
+input[type=text] {
+    width: 50%;
+    padding: var(--input-height) var(--input-width);
+    margin: var(--margin-tight) 0;
+    box-sizing: border-box;
+    border: 2px solid var(--color-emphasis);
+    border-radius: 4px;
+    text-align: center;
+    color: var(--color-std);
+    font-size: var(--font-size-p1);
+    font-family: var(--font-family)
+}
+
+.button {
+    background-color: var(--color-fill);
+    border: none;
+    color: var(--color-std);
+    padding: var(--input-height) var(--input-width);
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: var(--font-size-p1);
+    margin: var(--margin-tight) var(--margin-tight);
+    cursor: pointer;
+    border-radius: 4px;
+    width: 33%;
+}
+
+/* page */
+body {
+    background-color: var(--color-bg);
+}
