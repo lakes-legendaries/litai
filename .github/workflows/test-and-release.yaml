@@ -60,7 +60,6 @@ jobs:
         git push origin actions:actions
     - name: Publish docs to GitHub pages (docs branch)
       run: |
-        git checkout main
         git add docs -f
         git commit docs -m "Updating Documentation"
         git push origin actions:docs -f
