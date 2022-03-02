@@ -1,5 +1,6 @@
 *
-!data/hbot.db
-!data/senescence.db
-!litai
-!Dockerfile.requirements
+!/data/hbot.db
+!/data/senescence.db
+!/litai
+!/Dockerfile.requirements
+!/requirements.txt

@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# exit on error
+set -e
+
+# create .ezazure file
+if [ -f .ezazure ]; then
+    echo "connection_str: $EZAZURE_TOKEN" > .ezazure
+    echo "container: data" >> .ezazure
+fi
+
+# create .dockerkey file
+if [ -f .dockerkey ]; then
+    echo "$GIT_TOKEN" > .dockerkey
+fi
+
+# build python service
+docker build . -f Dockerfile.python-service -t python-service
+PYTHON="docker run -v $(pwd):/code python-service python"
+
+# download file list, pmids, and database
+cmd/get-files
+$PYTHON -m ezazure --download data/senescence_pmids.txt
+$PYTHON -m ezazure --download data/pubmed.db
+
+# update database
+$PYTHON litai/db.py --append
+
+# upload database
+$PYTHON -m ezazure --upload data/pubmed.db
+
+# update tables
+for TABLE in hbot senescence; do
+    $PYTHON litai/score.py config/$TABLE.yaml
+    $PYTHON -m ezazure --upload data/$TABLE.db
+done
+
+# update image
+. cmd/docker --upload
+
+# update website
+$PYTHON -m ezazure --upload --regex "html/.*" --container app
