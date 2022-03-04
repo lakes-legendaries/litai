@@ -64,3 +64,16 @@ The following secrets are stored:
       #. :code:`$SERVICE_PRINCIPAL_USER`
       #. :code:`$SERVICE_PRINCIPAL_PASSWORD`
       #. :code:`$SERVICE_PRINCIPAL_TENANT`
+
+*********
+Wish List
+*********
+
+There are many improvements that could be made to this infrastructure. The
+biggest one would be to create a cloud-based SQL server (MySQL or MSSQL) which
+could host the PubMed mirror and scored database files. This would greatly
+accelerate development and deployment, and would remove a lot of the hacker-y
+that had to go into making this work. (We probably wouldn't even need to use
+Azure batch anymore if we had that server!)
+
+This is expensive, though, so it remains on the wish list.
