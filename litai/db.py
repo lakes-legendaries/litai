@@ -131,6 +131,7 @@ class DataBase:
                 GROUP BY PMID
             )
         """)
+        engine.commit()
         engine.execute("""VACUUM""")
 
         # save files used to make table
