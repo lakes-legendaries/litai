@@ -16,38 +16,6 @@ if [ ! -f .ezazure ]; then
     echo "container: data" >> .ezazure
 fi
 
-# create .dockerkey file
-if [ ! -f .dockerkey ]; then
-    echo "$GIT_TOKEN" > .dockerkey
-fi
-
-# create container app dockerfile
-cp Dockerfile.conapp-service Dockerfile.tmp
-for CRED in \
-    SERVICE_PRINCIPAL_USER \
-    SERVICE_PRINCIPAL_PASSWORD \
-    SERVICE_PRINCIPAL_TENANT \
-; do
-
-    # load credential from file
-    CRED_VAR=$(eval "echo \${$CRED}")
-    if [ -z "$CRED_VAR" ]; then
-        eval $CRED=$( \
-            cat .service-principal \
-            | grep $CRED \
-            | sed -E 's/.*: //g' \
-        )
-    fi
-
-    # substitute in Dockerfile
-    CRED_VAR=$(eval "echo \${$CRED}")
-    sed -i "s/\$$CRED/$CRED_VAR/g" Dockerfile.tmp
-done
-
-# build container app service
-docker build . -f Dockerfile.tmp -t conapp-service
-rm Dockerfile.tmp
-
 # build python service
 docker build . -f Dockerfile.python-service -t python-service
 PYTHON="docker run -v $(pwd):/code python-service python"
@@ -84,8 +52,8 @@ done
 echo "$(date +%F@%T:) Updating image"
 cmd/docker --upload
 
-# update website
-$PYTHON -m ezazure --upload --regex "html/.*" --container app
-
 # reload container app
 cmd/restart-con-app
+
+# update website
+$PYTHON -m ezazure --upload --regex "html/.*" --container app
