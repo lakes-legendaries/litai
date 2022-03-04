@@ -40,6 +40,7 @@ class SearchEngine:
         join: str = 'AND',
         limit: int = 30,
         min_score: float = None,
+        require_abstract: bool = True,
 
     ) -> DataFrame:
         """Find article by keyword
@@ -62,6 +63,8 @@ class SearchEngine:
             max number of results
         min_score: float, optional, default=0
             minimum score to include in results
+        require_abstract: bool. optional, default=True
+            only pull articles with abstracts
 
         Returns
         -------
@@ -150,6 +153,14 @@ class SearchEngine:
             query += f"""
                 {'AND' if has_conditions else 'WHERE'}
                 (Score >= {min_score})
+            """
+            has_conditions = True
+
+        # condition: has abstract
+        if require_abstract:
+            query += f"""
+                {'AND' if has_conditions else 'WHERE'}
+                (Abstract != '')
             """
             has_conditions = True
 
