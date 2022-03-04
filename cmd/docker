@@ -27,9 +27,8 @@ for ARG in $@; do
     esac
 done
 
-# clear existing containers and images
+# clear existing containers
 docker kill $(docker ps -aq) &> /dev/null
-docker rmi $(docker images -aq) &> /dev/null
 docker rm $(docker ps -aq) &> /dev/null
 
 # login to GitHub Container Registry

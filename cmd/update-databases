@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# clear existing containers and images
-docker kill $(docker ps -aq) &> /dev/null
-docker rmi $(docker images -aq) &> /dev/null
-docker rm $(docker ps -aq) &> /dev/null
-
 # exit on error
 set -e
 
@@ -89,8 +84,8 @@ done
 echo "$(date +%F@%T:) Updating image"
 cmd/docker --upload
 
-# reload container app
-docker run conapp-service
-
 # update website
 $PYTHON -m ezazure --upload --regex "html/.*" --container app
+
+# reload container app
+cmd/restart-con-app

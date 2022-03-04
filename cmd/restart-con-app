@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# clear existing containers
+docker kill $(docker ps -aq) &> /dev/null
+docker rm $(docker ps -aq) &> /dev/null
+
+# exit on error
+set -e
+
+# create container app dockerfile
+cp Dockerfile.conapp-service Dockerfile.tmp
+for CRED in \
+    SERVICE_PRINCIPAL_USER \
+    SERVICE_PRINCIPAL_PASSWORD \
+    SERVICE_PRINCIPAL_TENANT \
+; do
+
+    # load credential from file
+    CRED_VAR=$(eval "echo \${$CRED}")
+    if [ -z "$CRED_VAR" ]; then
+        eval $CRED=$( \
+            cat .service-principal \
+            | grep $CRED \
+            | sed -E 's/.*: //g' \
+        )
+    fi
+
+    # substitute in Dockerfile
+    CRED_VAR=$(eval "echo \${$CRED}")
+    sed -i "s/\$$CRED/$CRED_VAR/g" Dockerfile.tmp
+done
+
+# build container app service
+docker build . -f Dockerfile.tmp -t conapp-service
+rm Dockerfile.tmp
+
+# reload container app
+docker run conapp-service
