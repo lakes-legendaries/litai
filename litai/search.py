@@ -221,5 +221,5 @@ class SearchEngine:
         int
             total number of articles
         """
-        query = f'SELECT COUNT(*) FROM {self._table}'
+        query = f'SELECT MAX(_ROWID_) FROM {self._table}'
         return self._con.execute(query).fetchone()[0]

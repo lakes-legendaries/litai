@@ -3,14 +3,21 @@
 # exit on error
 set -e
 
+# log all output to file
+LOGS=update-databases-$(date +%F-%T).log
+rm -f $LOGS
+touch $LOGS
+exec > $LOGS
+exec 2>&1
+
 # create .ezazure file
-if [ -f .ezazure ]; then
+if [ ! -f .ezazure ]; then
     echo "connection_str: $EZAZURE_TOKEN" > .ezazure
     echo "container: data" >> .ezazure
 fi
 
 # create .dockerkey file
-if [ -f .dockerkey ]; then
+if [ ! -f .dockerkey ]; then
     echo "$GIT_TOKEN" > .dockerkey
 fi
 
@@ -18,25 +25,37 @@ fi
 docker build . -f Dockerfile.python-service -t python-service
 PYTHON="docker run -v $(pwd):/code python-service python"
 
+# upload log file on exit
+function upload_logs {
+    $PYTHON -m ezazure --upload $LOGS --container logs
+}
+trap upload_logs EXIT
+
 # download file list, pmids, and database
+echo "$(date +%F@%T:) Downloading files"
 cmd/get-files
 $PYTHON -m ezazure --download data/senescence_pmids.txt
 $PYTHON -m ezazure --download data/pubmed.db
 
 # update database
+echo "$(date +%F@%T:) Updating database"
 $PYTHON litai/db.py --append
 
 # upload database
+echo "$(date +%F@%T:) Uploading database"
 $PYTHON -m ezazure --upload data/pubmed.db
 
 # update tables
 for TABLE in hbot senescence; do
+    echo "$(date +%F@%T:) Updating $TABLE table"
     $PYTHON litai/score.py config/$TABLE.yaml
+    echo "$(date +%F@%T:) Uploading $TABLE table"
     $PYTHON -m ezazure --upload data/$TABLE.db
 done
 
 # update image
-. cmd/docker --upload
+echo "$(date +%F@%T:) Updating image"
+cmd/docker --upload
 
 # update website
 $PYTHON -m ezazure --upload --regex "html/.*" --container app

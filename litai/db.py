@@ -66,7 +66,7 @@ class DataBase:
 
         # check that database exists
         if not isfile(self._database):
-            raise ValueError(f'{self._databae} DNE')
+            raise ValueError(f'{self._database} DNE')
 
         # get files already in db
         already_in = [
@@ -94,7 +94,7 @@ class DataBase:
 
         # process files
         total = len(self._file_list)
-        for n, server_file in enumerate(self._file_list):
+        for n, server_file in enumerate(sorted(self._file_list)):
 
             # pull file from server
             local_file = self.__class__._get_file(server_file)
@@ -110,9 +110,9 @@ class DataBase:
 
             # write status
             count = sqlite3.connect(self._database) \
-                .execute('SELECT COUNT(*) FROM ARTICLES') \
+                .execute('SELECT MAX(_ROWID_) FROM ARTICLES LIMIT 1') \
                 .fetchone()[0]
-            print(f'{count} articles from {n+1} / {total} files', end='\r')
+            print(f'{count} articles from {n+1} / {total} files')
 
             # clean up
             remove(local_file)
@@ -124,14 +124,14 @@ class DataBase:
         engine = sqlite3.connect(self._database)
 
         # remove repeated entries
-        engine.executescript(f"""
-            CREATE TEMPORARY TABLE _{self._table}
-            AS SELECT DISTINCT * FROM {self._table};
-            DROP TABLE {self._table};
-            CREATE TABLE {self._table}
-            AS SELECT * FROM _{self._table};
-            VACUUM;
+        engine.execute("""
+            DELETE FROM ARTICLES
+            WHERE _ROWID_ NOT IN (
+                SELECT MIN(_ROWID_) FROM ARTICLES
+                GROUP BY PMID
+            )
         """)
+        engine.execute("""VACUUM""")
 
         # save files used to make table
         engine.execute("""

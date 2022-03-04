@@ -1,9 +1,11 @@
 /*.egg-info
+/*.log
 /**/__pycache__
 /.dockerkey
 /.ezazure
 /.venv*
 /.vscode
+/batch.json
 /build
 /data/*
 /docs

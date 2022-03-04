@@ -1,0 +1,27 @@
+name: Update Databases
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  update-databases:
+    runs-on: ubuntu-latest
+    environment: actions
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+          python-version: 3.9
+    - name: Create batch.json
+      run: |
+        python cmd/batch-json.py
+    - name: Submit batch job
+      env:
+        AZURE_BATCH_ACCESS_KEY: ${{ secrets.AZURE_BATCH_ACCESS_KEY }}
+        AZURE_BATCH_ACCOUNT: ${{ secrets.AZURE_BATCH_ACCOUNT }}
+        AZURE_BATCH_ENDPOINT: ${{ secrets.AZURE_BATCH_ENDPOINT }}
+      run: |
+        az batch task create --job-id refresh --json-file batch.json

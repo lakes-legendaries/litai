@@ -5,7 +5,7 @@ WORKDIR /code
 
 # setup unix
 RUN apt-get update
-RUN apt-get install -y g++
+RUN apt-get install -y g++ wget
 RUN apt-get clean
 
 # setup python
@@ -13,6 +13,7 @@ COPY requirements.txt .
 RUN python -m pip install --upgrade pip
 RUN python -m pip install -r requirements.txt
 RUN rm requirements.txt
+ENV PYTHONPATH .
 
 # setup app
 COPY litai/ litai/

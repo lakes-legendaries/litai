@@ -16,6 +16,7 @@ COPY Dockerfile.requirements .
 RUN python -m pip install --upgrade pip
 RUN python -m pip install -r Dockerfile.requirements
 RUN rm Dockerfile.requirements
+ENV PYTHONPATH .
 
 # copy databases
 COPY data/hbot.db data/

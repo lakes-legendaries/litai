@@ -189,7 +189,7 @@ class ArticleScorer(SearchEngine):
                 count += df.shape[0]
                 kcount = int(count / 1000)
                 ktotal = int(total / 1000)
-                print(f'Scored {kcount}k / {ktotal}k articles   ', end='\r')
+                print(f'Scored {kcount}k / {ktotal}k articles   ')
 
         # add linebreak at end of processing
         if self._verbose:
