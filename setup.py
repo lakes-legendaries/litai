@@ -21,9 +21,14 @@ if __name__ == '__main__':
         # requirements
         install_requires=[
             'fastapi',
+            'nptyping',
+            'numpy',
             'pandas',
+            'pyyaml',
             'retry',
+            'sklearn',
             'uvicorn',
+            'vhash',
         ],
         python_requires='>=3.8',
 

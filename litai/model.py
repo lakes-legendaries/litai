@@ -13,6 +13,10 @@ from vhash import VHash
 class TokenRegressor:
     """Article Ranking Model
 
+    This model uses the vhash package to perform fast vector quantization of
+    documents, and then uses an sklearn LinearRegression model to score
+    articles.
+
     Parameters
     ----------
     fast: bool, optional, default=False

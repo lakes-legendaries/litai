@@ -4,10 +4,22 @@ LitAI: AI-Powered Literature Search
 
 For the Methuselah Foundation.
 
-This app is hosted as an `API
-<https://litai.gentleriver-2494951c.eastus2.azurecontainerapps.io/>`_.
+This app searches the scientific literature to find articles that are relevant
+to the mission of the Methuselah Foundation. It works by:
 
-To get started, check out the `docs <https://lakes-legendaries.github.io/litai/>`_!
+#. Ingesting a list of PubMed IDs or keywords,
+#. Pulling relevant articles from PubMed, 
+#. Using vector quantization to create numeric representations of each article,
+#. Using AI/ML to score all articles based on their relevance.
 
-If you will be contributing to this repo, checkout the
-`developer guide <https://lakes-legendaries.github.io/litai/dev.html>`_.
+While this app is currently configured to find anti-senescence research,
+nothing in it is specific to this field.
+
+You can see the results of this algorithm on our `Search Engine
+<https://litai.blob.core.windows.net/app/search.html>`_. This app is also
+hosted as an `API on Azure
+<https://litai.kindplant-8e343140.eastus.azurecontainerapps.io/>`_. For more
+details on the algorithm, check out the `docs
+<https://lakes-legendaries.github.io/litai/>`_. If you will be contributing to
+this repo, see the `developer guide
+<https://lakes-legendaries.github.io/litai/dev.html>`_.

@@ -22,6 +22,12 @@
 div.centered {
     margin: 0 auto;
     max-width: var(--max-width);
+    text-align: center;
+}
+
+div.justified {
+    text-align: justify;
+    text-justify: inter-word;
 }
 
 div.boxed, div.padding {
@@ -34,13 +40,6 @@ div.boxed, div.padding {
 }
 
 div.boxed {border: 3px solid var(--color-std);}
-
-div.attribution {
-    position: absolute;
-    bottom: 5px;
-    width: 300px;
-    height: 100px;
-}
 
 /* text */
 .h1, .h2, .p1, .p2, .p3 {

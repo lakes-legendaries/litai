@@ -16,8 +16,6 @@ from retry import retry
 class DataBase:
     """Mirror PubMed database to a local SQL database
 
-    This creates a new db from scratch, deleting any existing db.
-
     Parameters
     ----------
     database: str, optional, default='data/pubmed.db'
