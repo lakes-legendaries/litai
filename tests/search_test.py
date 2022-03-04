@@ -79,6 +79,7 @@ def test_pmid_search():
     engine = SearchEngine(database='data/example.db')
     df = engine.search(
         pmids=pmids,
+        require_abstract=False,
     )
     assert(df.shape[0] == 2)
     assert(len(
