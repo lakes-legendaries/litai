@@ -56,5 +56,5 @@ fi
 if [ ! -z "$UPLOAD" ]; then
     docker tag litai:latest ghcr.io/lakes-legendaries/litai:latest
     docker push ghcr.io/lakes-legendaries/litai:latest
-    $PYTHON cmd/delete-old.py
+    python cmd/delete-old.py
 fi
