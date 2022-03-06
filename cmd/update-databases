@@ -18,34 +18,34 @@ fi
 
 # build python service
 docker build . -f Dockerfile.python-service -t python-service
-alias python="docker run -v $(pwd):/code python-service python"
+PYTHON="docker run -v $(pwd):/code python-service python"
 
 # upload log file on exit
 function upload_logs {
-    python -m ezazure --upload $LOGS --container logs
+    $PYTHON -m ezazure --upload $LOGS --container logs
 }
 trap upload_logs EXIT
 
 # download file list, pmids, and database
 echo "$(date +%F@%T:) Downloading files"
 cmd/get-files
-python -m ezazure --download data/senescence_pmids.txt
-python -m ezazure --download data/pubmed.db
+$PYTHON -m ezazure --download data/senescence_pmids.txt
+$PYTHON -m ezazure --download data/pubmed.db
 
 # update database
 echo "$(date +%F@%T:) Updating database"
-python litai/db.py --append
+$PYTHON litai/db.py --append
 
 # upload database
 echo "$(date +%F@%T:) Uploading database"
-python -m ezazure --upload data/pubmed.db
+$PYTHON -m ezazure --upload data/pubmed.db
 
 # update tables
 for TABLE in hbot senescence; do
     echo "$(date +%F@%T:) Updating $TABLE table"
-    python litai/score.py config/$TABLE.yaml
+    $PYTHON litai/score.py config/$TABLE.yaml
     echo "$(date +%F@%T:) Uploading $TABLE table"
-    python -m ezazure --upload data/$TABLE.db
+    $PYTHON -m ezazure --upload data/$TABLE.db
 done
 
 # update image
@@ -56,4 +56,4 @@ echo "$(date +%F@%T:) Updating image"
 . cmd/restart-con-app
 
 # update website
-python -m ezazure --upload --regex "html/.*" --container app
+$PYTHON -m ezazure --upload --regex "html/.*" --container app
