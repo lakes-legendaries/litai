@@ -50,10 +50,10 @@ done
 
 # update image
 echo "$(date +%F@%T:) Updating image"
-. cmd/docker --upload
+PYTHON="$PYTHON" cmd/docker --upload
 
 # reload container app
-. cmd/restart-con-app
+cmd/restart-con-app
 
 # update website
 $PYTHON -m ezazure --upload --regex "html/.*" --container app
