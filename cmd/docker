@@ -40,6 +40,8 @@ if [ ! -z "$UPLOAD" ]; then
         else
             GIT_TOKEN=$(cat .dockerkey)
         fi
+    elif [ ! -f ".dockerkey" ]; then
+        echo $GIT_TOKEN > .dockerkey
     fi
     docker login ghcr.io -u lakes-legendaries -p $GIT_TOKEN &> /dev/null
 fi
