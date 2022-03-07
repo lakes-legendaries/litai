@@ -5,7 +5,7 @@ WORKDIR /code
 
 # setup unix
 RUN apt-get update
-RUN apt-get install -y g++ wget
+RUN apt-get install -y curl g++ wget
 RUN apt-get clean
 
 # setup python
