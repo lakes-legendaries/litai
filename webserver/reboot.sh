@@ -3,16 +3,13 @@
 # exit on error
 set -e
 
-# enter working directory
-cd /home/$USER/litai
-
-# activate virtual environment
-source .venv/bin/activate
-export PYTHONPATH=$(pwd)
+# alias directories
+KEYDIR=/etc/letsencrypt/live/litai.eastus.cloudapp.azure.com
+LITDIR=/home/$USER/litai
 
 # run app
-KEYDIR=/etc/letsencrypt/live/litai.eastus.cloudapp.azure.com
-uvicorn litai.app:app \
+sudo PYTHONPATH=$LITDIR $LITDIR/.venv/bin/python \
+    -m uvicorn litai.app:app \
     --host 0.0.0.0 \
     --port 443 \
     --ssl-keyfile=$KEYDIR/privkey.pem \
