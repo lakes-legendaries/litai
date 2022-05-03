@@ -147,6 +147,13 @@ class DataBase:
             ])}
         """)
 
+        # make indices
+        for col in ['PMID', 'Date', 'Title']:
+            engine.execute(f"""
+                CREATE INDEX IF NOT EXISTS ARTICLES_{col}
+                ON ARTICLES({col})
+            """)
+
         # save
         engine.commit()
 

@@ -188,6 +188,13 @@ class ArticleScorer(SearchEngine):
         # newline
         print('')
 
+        # create indices
+        for col in ['PMID', 'Score']:
+            self._con.execute(f"""
+                CREATE INDEX IF NOT EXISTS {self._scores_table}_{col}
+                ON {self._scores_table}({col})
+            """)
+
         # commit changes
         if not self._temp_str:
             self._con.commit()
