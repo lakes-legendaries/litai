@@ -65,4 +65,4 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 
 # run startup script
-$SCRIPTS_DIR/reboot.sh
+$SCRIPTS_DIR/reboot.sh &
