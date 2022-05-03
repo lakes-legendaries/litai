@@ -17,8 +17,8 @@ nothing in it is specific to this field.
 
 You can see the results of this algorithm on our `Search Engine
 <https://litai.azureedge.net/>`_. This app is also hosted as an `API on Azure
-<litai.eastus.cloudapp.azure.com>`_. This app's code is publicly available on
-`GitHub <https://github.com/lakes-legendaries/litai>`_.
+<https://litai.eastus.cloudapp.azure.com>`_. This app's code is publicly
+available on `GitHub <https://github.com/lakes-legendaries/litai>`_.
 
 *****************
 Table Of Contents
