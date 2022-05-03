@@ -61,7 +61,7 @@ done
 # upload db and website
 echo "$(date +%F@%T:) Uploading data files"
 export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
-az storage blob upload -f $TEMP_DB -c data -n $(basename $TEMP_DB)
+az storage blob upload -f data/pubmed.db -c data -n pubmed.db
 az storage blob upload-batch -s html/ -d \$web
 
 # publish new files to api
