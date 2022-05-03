@@ -33,7 +33,8 @@ cp -r $LIVE_DIR $TEMP_DIR
 
 # update code, recreate venv
 cd $TEMP_DIR
-git pull origin main:main -f
+git fetch origin
+git reset --hard origin/main
 new_venv
 
 # update pubmed database
