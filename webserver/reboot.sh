@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# exit on error
-set -e
-
 # alias directories
 KEYDIR=/etc/letsencrypt/live/litai.eastus.cloudapp.azure.com
 LITDIR=/home/$USER/litai
+
+# stop running services
+sudo kill -9 $(ps -A | grep python | awk '{print $1}')
 
 # run app
 sudo PYTHONPATH=$LITDIR $LITDIR/.venv/bin/python \
