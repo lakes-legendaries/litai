@@ -40,7 +40,7 @@ sudo certbot certonly \
 # edit crontab
 CRONTAB_DIR=/var/spool/cron/crontabs
 SCRIPTS_DIR=/home/$USER/litai/webserver
-sudo rm $CRONTAB_DIR/*
+sudo rm -f $CRONTAB_DIR/*
 echo "@reboot $SCRIPTS_DIR/reboot.sh" | sudo tee $CRONTAB_DIR/$USER
 echo "0 4 * * * $SCRIPTS_DIR/update.sh" | sudo tee --append $CRONTAB_DIR/$USER
 echo "0 3 1 * * reboot" | sudo tee $CRONTAB_DIR/root
@@ -52,6 +52,14 @@ done
 export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/$USER/secrets/litai-fileserver)"
 git clone https://github.com/lakes-legendaries/litai.git
 az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
+
+# create virtual environment
+cd /home/$USER/litai
+rm -rfd .venv
+python3.9 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip -r requirements.txt
 
 # run startup script
 $SCRIPTS_DIR/reboot.sh
