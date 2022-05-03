@@ -22,7 +22,7 @@ sudo apt-get install -y \
 
 # install python3.9
 sudo add-apt-repository -y ppa:deadsnakes/ppa
-sudo apt install -y python3.9 python3.9-venv python3.9-dev
+sudo apt install -y python3.9 python3.9-dev python3.9-venv
 
 # install azure cli
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
