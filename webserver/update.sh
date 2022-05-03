@@ -31,10 +31,20 @@ TEMP_DIR=/home/mike/litai-update
 rm -rfd $TEMP_DIR
 cp -r $LIVE_DIR $TEMP_DIR
 
-# update code, recreate venv
+# update code, check for changes in this script
 cd $TEMP_DIR
+THIS_FILE=webserver/update.sh
+BACKUP=~/update-backup.sh
+cp $THIS_FILE $BACKUP
 git fetch origin
 git reset --hard origin/main
+if ! cmp --silent $THIS_FILE $BACKUP; then
+    $THIS_FILE
+    exit 0
+fi
+rm $BACKUP
+
+# recreate venv
 new_venv
 
 # update pubmed database
