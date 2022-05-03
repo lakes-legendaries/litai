@@ -63,4 +63,4 @@ cd $LIVE_DIR
 new_venv
 
 # restart api
-uvicorn litai.app:app --reload
+webserver/reboot.sh
