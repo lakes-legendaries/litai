@@ -22,7 +22,7 @@ sudo apt-get install -y \
 
 # install python3.9
 sudo add-apt-repository -y ppa:deadsnakes/ppa
-sudo apt install -y python3.9
+sudo apt install -y python3.9 python3.9-venv
 
 # install azure cli
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -59,7 +59,7 @@ rm -rfd .venv
 python3.9 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip -r requirements.txt
+python -m pip install -r requirements.txt
 
 # run startup script
 $SCRIPTS_DIR/reboot.sh
