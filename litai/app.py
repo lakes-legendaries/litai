@@ -26,7 +26,7 @@ def home():
     }
 
 
-@app.get("/search/{database}")
+@app.get("/search/")
 def search(
     keywords: Optional[str] = None,
     max_date: Optional[str] = None,
