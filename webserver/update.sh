@@ -23,6 +23,7 @@ function new_venv () {
 
 # renew certificates
 sudo certbot renew
+sudo chmod 777 -R /etc/letsencrypt/
 
 # copy workdir
 LIVE_DIR=/home/$USER/litai

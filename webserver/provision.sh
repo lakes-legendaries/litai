@@ -37,6 +37,9 @@ sudo certbot certonly \
     --standalone -n --domains litai.eastus.cloudapp.azure.com \
     --agree-tos --email mike@lakeslegendaries.com
 
+# allow access to certificates
+sudo chmod 777 -R /etc/letsencrypt/
+
 # edit crontab
 CRONTAB_DIR=/var/spool/cron/crontabs
 SCRIPTS_DIR=/home/$USER/litai/webserver
