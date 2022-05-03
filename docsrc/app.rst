@@ -39,3 +39,6 @@ This command:
 #. Schedules daily data/website updates
 #. Triggers a reboot script :code:`webserver/reboot.sh` to start the api on
    system startup
+
+Please note that this command expects the DNS of the webserver to be set to
+:code:`litai.eastus.cloudapp.azure.com`, and ports 80 and 443 must be open.
