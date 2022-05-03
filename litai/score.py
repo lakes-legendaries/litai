@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 from argparse import ArgumentParser
-from os.path import basename, join
+from os.path import basename
 from random import sample
-import sqlite3
 from typing import Union
 
-from numpy import array, concatenate
-from pandas import concat, DataFrame, read_sql_query
+from numpy import concatenate
+from pandas import concat, DataFrame
 import yaml
 
 from litai.model import TokenRegressor
@@ -23,32 +22,32 @@ class ArticleScorer(SearchEngine):
     ----------
     database: str, optional, default='data/pubmed.db'
         SQL database
-    table: str, optional, default='articles'
+    articles_table: str, optional, default='articles'
         Name of table in :code:`database`
     """
 
     def score(
         self,
         /,
-        output_fname: str = None,
+        scores_table: str = None,
         pos_pmids: Union[str, list[Union[str, int]]] = None,
         neg_pmids: Union[str, list[Union[str, int]]] = None,
         pos_keywords: Union[list[str], str] = None,
         neg_keywords: Union[list[str], str] = None,
         *,
         downsample: int = 10000,
-        exclude_passed: bool = False,
         keyword_limit: int = 3000,
         min_score: float = 0,
         rand_factor: float = 3,
         verbose: bool = True,
-    ) -> DataFrame:
+    ):
         """Score articles, spin off new database
 
         Parameters
         ----------
-        output_fname: str, optional, default=None
-            output database file
+        scores_table: str, optional, default=None
+            table to save scores into. If None, then a temporary table will be
+            used.
         pos_pmids: str or list[Union[str, int]], optional, default=None
             Target articles: Similiar articles will be scored highly. If str,
             treat as a filename
@@ -59,10 +58,9 @@ class ArticleScorer(SearchEngine):
             pull articles with any of these keywords as positive articles
         neg_keywords: Union[str, list[str]], optional, default=None
             pull articles with any of these keywords as negative articles
+        scores_table: str
         downsample: int, optional, default=10000
             If not None, then downsample df to have this max number of rows
-        exclude_passed: bool, optional, default=False
-            Exclude pos/neg pmids/keywords from resultant table
         min_score: float, optional, default=0
             Minimum score to be included in spinoff table
         rand_factor: float, optional, default=3
@@ -70,11 +68,6 @@ class ArticleScorer(SearchEngine):
             :code:`rand_factor * (len(pos_pmids) + len(neg_pmids))`
         verbose: bool, optional, default=False
             Write running status
-
-        Returns
-        -------
-        DataFrame
-            Articles in new database
         """
 
         # load pmids from file
@@ -84,22 +77,23 @@ class ArticleScorer(SearchEngine):
             neg_pmids = open(neg_pmids, 'r').read().splitlines()
 
         # save passed
-        self._output_fname = output_fname
         self._pos_pmids = pos_pmids
         self._neg_pmids = neg_pmids
         self._pos_keywords = pos_keywords
         self._neg_keywords = neg_keywords
         self._downsample = downsample
-        self._exclude_passed = exclude_passed
         self._keyword_limit = keyword_limit
         self._min_score = min_score
         self._rand_factor = rand_factor
         self._verbose = verbose
 
+        # determine whether we're saving scores or using a temporary table
+        self._temp_str = 'TEMPORARY' if not scores_table else ''
+        self._scores_table = scores_table if scores_table else 'SCORES_TABLE'
+
         # execute jobs
         self._fit_model()
         self._score_articles()
-        return self._make_new_db()
 
     def _fit_model(self):
         """Fit model for scoring articles"""
@@ -156,9 +150,9 @@ class ArticleScorer(SearchEngine):
         """Score all articles in table"""
 
         # create table
-        self._con.execute('DROP TABLE IF EXISTS SCORES_TABLE')
-        self._con.execute("""
-            CREATE TEMPORARY TABLE SCORES_TABLE (
+        self._con.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
+        self._con.execute(f"""
+            CREATE {self._temp_str} TABLE {self._scores_table} (
                 PMID str,
                 Score FLOAT
             )
@@ -180,7 +174,7 @@ class ArticleScorer(SearchEngine):
             ])
             if score_str:
                 self._con.execute(f"""
-                    INSERT INTO SCORES_TABLE (PMID, Score)
+                    INSERT INTO {self._scores_table} (PMID, Score)
                     VALUES {score_str}
                 """)
 
@@ -189,94 +183,14 @@ class ArticleScorer(SearchEngine):
                 count += df.shape[0]
                 kcount = int(count / 1000)
                 ktotal = int(total / 1000)
-                print(f'Scored {kcount}k / {ktotal}k articles   ')
+                print(f'Scored {kcount}k / {ktotal}k articles', end='\r')
 
-        # add linebreak at end of processing
-        if self._verbose:
-            print('')
+        # newline
+        print('')
 
-    def _make_new_db(self) -> DataFrame:
-        """Spin off table as new database
-
-        Returns
-        -------
-        DataFrame
-            Articles in new database
-        """
-
-        # create basic query
-        query = f"""
-            SELECT
-                {self._table}.PMID,
-                {self._table}.Date,
-                {self._table}.Title,
-                {self._table}.Abstract,
-                {self._table}.Keywords,
-                SCORES_TABLE.Score
-            FROM {self._table}
-            INNER JOIN SCORES_TABLE
-            ON SCORES_TABLE.PMID = {self._table}.PMID
-        """
-
-        # exclude passed articles and keywords
-        if self._exclude_passed:
-            has_conditions = False
-            for sign in ['pos', 'neg']:
-
-                # exclude pmids
-                pmids = getattr(self, f'_{sign}_pmids')
-                if pmids:
-                    query += f"""
-                        {'AND' if has_conditions else 'WHERE'}
-                        {self._table}.PMID NOT IN ({
-                            ", ".join([
-                                f'"{pmid}"'
-                                for pmid in pmids
-                            ])
-                        })
-                    """
-                    has_conditions = True
-
-                # exclude keywords
-                keywords = getattr(self, f'_{sign}_keywords')
-                if keywords:
-                    for keyword in keywords:
-                        query += f"""
-                            {'AND' if has_conditions else 'WHERE'}
-                            ({' AND '.join(array([
-                                    [
-                                        f'{field} NOT LIKE "%{keyword}%"'
-                                    ]
-                                    for field in [
-                                        'title',
-                                        'abstract',
-                                        'keywords',
-                                    ]
-                                ]).flatten())
-                            })
-                        """
-                        has_conditions = True
-
-        # order by score
-        query += """
-            ORDER BY SCORES_TABLE.Score DESC
-        """
-
-        # extract data for new db
-        df = read_sql_query(query, con=self._con)
-
-        # dump df into new database
-        if self._output_fname:
-            df.to_sql(
-                name=self._table,
-                chunksize=1000,
-                con=sqlite3.connect(self._output_fname),
-                if_exists='replace',
-                index=False,
-            )
-
-        # return result
-        return df
+        # commit changes
+        if not self._temp_str:
+            self._con.commit()
 
 
 # command-line interface
@@ -295,9 +209,8 @@ if __name__ == '__main__':
     # read config from file
     config = yaml.safe_load(open(args.config, 'r'))
 
-    # auto-deduce output fname
-    config['output_fname'] = \
-        join('data', basename(args.config).split('.')[0] + '.db')
+    # auto-deduce name of scores table
+    config['scores_table'] = basename(args.config).split('.')[0]
 
     # run article scorer
     ArticleScorer().score(**config)

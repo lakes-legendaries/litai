@@ -2,78 +2,40 @@
 Infrastructure
 ##############
 
-The infrastructure for this project includes:
-
-#. An Azure storage account, with the following containers:
-
-   #. app (for hosting the browser-based search engine website)
-   #. data (for hosting databases between runs)
-   #. logs (for persisting logs after runs on batch)
-
-#. An Azure container app
-#. An Azure batch account
-#. An image on the GitHub Container Registry (GHCR)
-
-*****************
-Automatic Updates
-*****************
-
-This project is hosted as an application accessible from a `browser-based
-search engine <https://litai.blob.core.windows.net/app/search.html>`_.
-
-This app is updated every week via the
-:code:`.github/workflows/update-databases.yaml` Github Action. Because the
-PubMed database is so large, and the update workflow is so intensive, we run
-this update off-site on the Azure batch servers.
-
-The json that controls the batch job is created with the :code:`cmd/batch-json`
-script. Then, on the batch servers, the script :code:`cmd/update-databases` is
-run, which:
-
-#. Updates the PubMed database mirror with the most recent files
-#. Re-generates the :code:`hbot` and :code:`senescence` database files with the
-   :code:`litai/score.py` script
-#. Updates the docker image hosted on the GHCR with the :code:`cmd/docker`
-   command
-#. Deletes old images in the GHCR with the :code:`cmd/delete_old.py` script
-#. Reloads the container app on the Azure servers with the
-   :code:`cmd/restart-con-app` command.
-#. Persists data files in Azure storage
-#. Updates the website with code from the :code:`html/` directory.
+This app is hosted as an API and as a website. Here, we discuss the steps
+necessary to make this project live.
 
 *******
-Secrets
+Website
 *******
 
-The following secrets are stored:
+This app's search engine is hosted as a static website on Azure, with `this
+primary endpoint <https://litai.z13.web.core.windows.net/>`_. `This CDN
+<https://litai.azureedge.net/>`_ is then used to accelerate delivery to clients.
 
-#. On GitHub:
+We use blob storage and the azure cli to automatically update the website when
+the code and data files are updated (daily). See :code:`webserver/update.sh`
+for the implementation.
 
-   #. To submit batch jobs:
+***
+API
+***
 
-      #. :code:`$AZURE_BATCH_ACCESS_KEY`
-      #. :code:`$AZURE_BATCH_ACCOUNT`
-      #. :code:`$AZURE_BATCH_ENDPOINT`
+This app's API is hosted on an Ubuntu 20.04 Azure VM. The VM can be properly
+provisioned by placing the Azure blob storage connection string corresponding
+to the website's account in :code:`~/secrets/litai-fileserver`, and then
+running:
 
-#. On Azure:
+.. code-block:: bash
 
-   #. To persist data files: :code:`$EZAZURE_TOKEN`
-   #. To push to GHCR: :code:`$GIT_TOKEN`
-   #. To reset the container app after updates:
+   curl https://raw.githubusercontent.com/lakes-legendaries/litai/main/webserver/provision.sh | sudo bash
 
-      #. :code:`$SERVICE_PRINCIPAL_USER`
-      #. :code:`$SERVICE_PRINCIPAL_PASSWORD`
-      #. :code:`$SERVICE_PRINCIPAL_TENANT`
+This command:
 
-*********
-Wish List
-*********
-
-There are many improvements that could be made to this infrastructure. The
-biggest one would be to create a cloud-based SQL server (MySQL or MSSQL) which
-could host the PubMed mirror and scored database files. This would greatly
-accelerate development and deployment, and would remove a lot of the hacker-y
-that had to go into making this work. (We probably wouldn't even need to use
-Azure batch anymore if we had that server!)
-
-This is expensive, though, so it remains on the wish list.
+#. Installs python
+#. Installs the Azure CLI
+#. Uses certbot to create a secure https connection
+#. Schedules monthly reboots
+#. Schedules daily data/website updates
+#. Triggers a reboot script :code:`webserver/reboot.sh` to start the api on
+   system startup

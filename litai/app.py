@@ -28,15 +28,16 @@ def home():
 
 @app.get("/search/{database}")
 def search(
-    database: str,
     keywords: Optional[str] = None,
     max_date: Optional[str] = None,
     min_date: Optional[str] = None,
+    scores_table: Optional[str] = None,
 ):
-    articles = SearchEngine(f'data/{database}.db').search(
+    articles = SearchEngine('data/pubmed.db').search(
         keywords=keywords.split() if keywords else None,
         max_date=max_date,
         min_date=min_date,
+        scores_table=scores_table,
     )
     return {
         n: {

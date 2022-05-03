@@ -6,6 +6,9 @@ All of the programs in this package have an easy command-line interface for
 executing this algorithm's major functions. Here, we provide a guide for
 quickly running this pipeline.
 
+Please note that this page is a developer's guide for running this package's
+programs locally, and NOT for accessing the API on our webserver.
+
 ***********************
 Set up your environment
 ***********************

@@ -13,17 +13,17 @@ class SearchEngine:
     ----------
     database: str, optional, default='data/pubmed.db'
         SQL database
-    table: str, optional, default='articles'
+    articles_table: str, optional, default='articles'
         Name of table in :code:`database`
     """
     def __init__(
         self,
         /,
         database: str = 'data/pubmed.db',
-        table: str = 'articles',
+        articles_table: str = 'articles',
     ):
         # save passed
-        self._table = table
+        self._articles_table = articles_table
 
         # connect to database
         self._database = database
@@ -36,6 +36,7 @@ class SearchEngine:
         max_date: str = None,
         min_date: str = None,
         pmids: list[Union[str, int]] = None,
+        scores_table: str = None,
         *,
         join: str = 'AND',
         limit: int = 30,
@@ -55,14 +56,17 @@ class SearchEngine:
             minimum date of articles to return
         pmids: list[Union[str, int]], optional, default=None
             pubmed ids of articles to return
+        scores_table: str, optional, default=None
+            search for articles from within this table
         join: str, optional, default='AND'
             if :code:`'AND'`, require that all keywords be present in found
             articles. If :code:`'OR'`, require that any keyword be present in
             found articles.
         limit: int, optional, default=30
             max number of results
-        min_score: float, optional, default=0
-            minimum score to include in results
+        min_score: float, optional, default=None
+            minimum score to include in results. Ignored if
+            :code:`scores_table` is not provided
         require_abstract: bool. optional, default=True
             only pull articles with abstracts
 
@@ -72,21 +76,28 @@ class SearchEngine:
             Matching articles
         """
 
-        # check for scores column
-        has_scores = 'Score' in read_sql_query(
-            """
-                SELECT * FROM ARTICLES
-                LIMIT 1
-            """,
-            con=self._con,
-        ).columns
-
         # select cols
         query = f"""
             SELECT {
-                ', '.join(['PMID', 'Date', 'Title', 'Abstract', 'Keywords'
-            ])} FROM {self._table}
+                ', '.join([
+                    f'{self._articles_table}.{field}'
+                    for field in [
+                        'PMID',
+                        'Date',
+                        'Title',
+                        'Abstract',
+                        'Keywords',
+                    ]
+                ])
+            } FROM {self._articles_table}
         """
+
+        # join scores table
+        if scores_table:
+            query += f"""
+                INNER JOIN {scores_table}
+                ON {scores_table}.PMID = {self._articles_table}.PMID
+            """
 
         # track if conditions have been inserted into query
         has_conditions = False
@@ -149,7 +160,7 @@ class SearchEngine:
             has_conditions = True
 
         # condition: min_score
-        if has_scores and min_score is not None:
+        if min_score is not None:
             query += f"""
                 {'AND' if has_conditions else 'WHERE'}
                 (Score >= {min_score})
@@ -165,7 +176,7 @@ class SearchEngine:
             has_conditions = True
 
         # order results
-        if has_scores:
+        if scores_table:
             query += """
                 ORDER BY Score DESC
             """
@@ -198,7 +209,7 @@ class SearchEngine:
         """
         return read_sql_query(
             f"""
-            SELECT * FROM {self._table}
+            SELECT * FROM {self._articles_table}
             ORDER BY RANDOM()
             LIMIT {count}
             """,
@@ -219,7 +230,7 @@ class SearchEngine:
             Iterator to all articles in database
         """
         return read_sql_query(
-            f'SELECT * FROM {self._table}',
+            f'SELECT * FROM {self._articles_table}',
             chunksize=chunksize,
             con=self._con,
         )
@@ -232,5 +243,5 @@ class SearchEngine:
         int
             total number of articles
         """
-        query = f'SELECT MAX(_ROWID_) FROM {self._table}'
+        query = f'SELECT MAX(_ROWID_) FROM {self._articles_table}'
         return self._con.execute(query).fetchone()[0]

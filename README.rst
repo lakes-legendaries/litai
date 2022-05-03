@@ -16,10 +16,8 @@ While this app is currently configured to find anti-senescence research,
 nothing in it is specific to this field.
 
 You can see the results of this algorithm on our `Search Engine
-<https://litai.blob.core.windows.net/app/search.html>`_. This app is also
-hosted as an `API on Azure
-<https://litai.kindplant-8e343140.eastus.azurecontainerapps.io/>`_. For more
-details on the algorithm, check out the `docs
-<https://lakes-legendaries.github.io/litai/>`_. If you will be contributing to
-this repo, see the `developer guide
+<https://litai.azureedge.net/>`_. This app is also hosted as an `API on Azure
+<litai.eastus.cloudapp.azure.com>`_. For more details on the algorithm, check
+out the `docs <https://lakes-legendaries.github.io/litai/>`_. If you will be
+contributing to this repo, see the `developer guide
 <https://lakes-legendaries.github.io/litai/dev.html>`_.

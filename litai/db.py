@@ -26,7 +26,7 @@ class DataBase:
         a the list of pubmed files
     start_year: int, optional, default=2017
         First year to mirror into database
-    table: str, optional, default='articles'
+    articles_table: str, optional, default='articles'
         Name of table in :code:`database`
     """
     def __init__(
@@ -36,7 +36,7 @@ class DataBase:
         database: str = 'data/pubmed.db',
         file_list: Union[str, list[str]] = 'data/file_list.txt',
         start_year: int = 2010,
-        table: str = 'articles',
+        articles_table: str = 'articles',
     ):
 
         # load file list
@@ -47,7 +47,7 @@ class DataBase:
         self._database = database
         self._file_list = file_list
         self._start_year = start_year
-        self._table = table
+        self._articles_table = articles_table
 
     def create(self, /):
         """Create database, deleting existing"""
@@ -60,11 +60,12 @@ class DataBase:
         self._insert()
 
     def append(self, /):
-        """Append to existing database"""
+        """Append to existing database, create if DNE"""
 
         # check that database exists
         if not isfile(self._database):
-            raise ValueError(f'{self._database} DNE')
+            self.create()
+            return
 
         # get files already in db
         already_in = [
@@ -99,7 +100,7 @@ class DataBase:
 
             # extract data from file
             self._extract_data(local_file).to_sql(
-                name=self._table,
+                name=self._articles_table,
                 chunksize=1000,
                 con=sqlite3.connect(self._database),
                 if_exists='append',
@@ -110,7 +111,7 @@ class DataBase:
             count = sqlite3.connect(self._database) \
                 .execute('SELECT MAX(_ROWID_) FROM ARTICLES LIMIT 1') \
                 .fetchone()[0]
-            print(f'{count} articles from {n+1} / {total} files')
+            print(f'{count} articles from {n+1} / {total} files', end='\r')
 
             # clean up
             remove(local_file)
