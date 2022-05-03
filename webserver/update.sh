@@ -26,8 +26,8 @@ sudo certbot renew
 sudo chmod 777 -R /etc/letsencrypt/
 
 # copy workdir
-LIVE_DIR=/home/$USER/litai
-TEMP_DIR=/home/$USER/litai-update
+LIVE_DIR=/home/mike/litai
+TEMP_DIR=/home/mike/litai-update
 rm -rfd $TEMP_DIR
 cp -r $LIVE_DIR $TEMP_DIR
 
@@ -49,7 +49,7 @@ done
 
 # upload db and website
 echo "$(date +%F@%T:) Uploading data files"
-export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/$USER/secrets/litai-fileserver)"
+export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
 az storage blob upload -f $TEMP_DB -c data -n $(basename $TEMP_DB)
 az storage blob upload-batch -s html/ -d \$web
 

@@ -42,22 +42,22 @@ sudo chmod 777 -R /etc/letsencrypt/
 
 # edit crontab
 CRONTAB_DIR=/var/spool/cron/crontabs
-SCRIPTS_DIR=/home/$USER/litai/webserver
+SCRIPTS_DIR=/home/mike/litai/webserver
 sudo rm -f $CRONTAB_DIR/*
-echo "@reboot $SCRIPTS_DIR/reboot.sh" | sudo tee $CRONTAB_DIR/$USER
-echo "0 4 * * * $SCRIPTS_DIR/update.sh" | sudo tee --append $CRONTAB_DIR/$USER
+echo "@reboot $SCRIPTS_DIR/reboot.sh" | sudo tee $CRONTAB_DIR/mike
+echo "0 4 * * * $SCRIPTS_DIR/update.sh" | sudo tee --append $CRONTAB_DIR/mike
 echo "0 3 1 * * reboot" | sudo tee $CRONTAB_DIR/root
-for CRONTAB in root $USER; do
+for CRONTAB in root mike; do
     sudo chmod 0600 $CRONTAB_DIR/$CRONTAB
 done
 
 # clone repo, download database
-export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/$USER/secrets/litai-fileserver)"
+export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
 git clone https://github.com/lakes-legendaries/litai.git
 az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
 
 # create virtual environment
-cd /home/$USER/litai
+cd /home/mike/litai
 rm -rfd .venv
 python3.9 -m venv .venv
 source .venv/bin/activate

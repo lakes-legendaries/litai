@@ -40,5 +40,9 @@ This command:
 #. Triggers a reboot script :code:`webserver/reboot.sh` to start the api on
    system startup
 
-Please note that this command expects the DNS of the webserver to be set to
-:code:`litai.eastus.cloudapp.azure.com`, and ports 80 and 443 must be open.
+Please note that this command expects:
+
+#. The DNS of the webserver to be set to
+   :code:`litai.eastus.cloudapp.azure.com`
+#. Ports 80 and 443 to be open
+#. The main user to be named :code:`mike`
