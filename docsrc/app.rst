@@ -28,7 +28,7 @@ running:
 
 .. code-block:: bash
 
-   curl https://raw.githubusercontent.com/lakes-legendaries/litai/main/webserver/provision.sh | sudo bash
+   curl https://raw.githubusercontent.com/lakes-legendaries/litai/main/webserver/provision.sh | bash
 
 This command:
 
