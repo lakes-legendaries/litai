@@ -10,8 +10,7 @@ Website
 *******
 
 This app's search engine is hosted as a static website on Azure, with `this
-primary endpoint <https://litai.z13.web.core.windows.net/>`_. `This CDN
-<https://litai.azureedge.net/>`_ is then used to accelerate delivery to clients.
+primary endpoint <https://litai.z13.web.core.windows.net/>`_.
 
 We use blob storage and the azure cli to automatically update the website when
 the code and data files are updated (daily). See :code:`webserver/update.sh`
