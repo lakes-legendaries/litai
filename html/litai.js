@@ -2,22 +2,15 @@
 var debugging = false;
 
 /* API URL*/
-var api_url = "https://litai.kindplant-8e343140.eastus.azurecontainerapps.io/search/";
+var api_url = "https://litai.eastus.cloudapp.azure.com/search/";
 
 /* Query API*/
 function query_api() {
 
-    // get table url
-    var url = api_url;
-    if (document.getElementById("senescence").checked) {
-        url += "senescence";
-    } else {
-        url += "hbot";
-    }
-
     // get search string
+    var url = api_url;
     var has_params = false;
-    var elements = ["keywords", "min_date"];
+    var elements = ["keywords", "min_date", "max_date"];
     for (const element of elements) {
         var value = document.getElementById(element).value;
         if (value.length > 0) {
@@ -25,6 +18,14 @@ function query_api() {
             url += element + "=" + encodeURI(value)
             has_params = true;
         }
+    }
+
+    // add in scores table
+    url += !has_params? "?": "&";
+    if (document.getElementById("senescence").checked) {
+        url += "scores_table=senescence";
+    } else {
+        url += "scores_table=hbot";
     }
 
     // log url
