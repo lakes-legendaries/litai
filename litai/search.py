@@ -243,5 +243,5 @@ class SearchEngine:
         int
             total number of articles
         """
-        query = f'SELECT MAX(_ROWID_) FROM {self._articles_table}'
+        query = f'SELECT COUNT(PMID) FROM {self._articles_table}'
         return self._con.execute(query).fetchone()[0]
