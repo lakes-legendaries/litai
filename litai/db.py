@@ -196,13 +196,23 @@ class DataBase:
         # return local filename
         return unzipped_file
 
-    def _extract_data(self, xml_file: str) -> DataFrame:
+    def _extract_data(
+        self,
+        xml_file: str,
+        *,
+        year_differential: int = 5,
+    ) -> DataFrame:
         """Extract structured data from xml file
 
         Parameters
         ----------
         xml_file: str
             xml file
+        year_differential: int, optional, default=10
+            Only keep articles if their first date in the system is >=
+            self._start_date + year_differential. This stops us from including
+            articles that are very old, but were just published online
+            recently.
 
         Returns
         -------
@@ -241,7 +251,7 @@ class DataBase:
 
         # initialize data dictionary and fields
         data = []
-        pmid = date = title = abstract = keywords = ''
+        pmid = oldest_date = newest_date = title = abstract = keywords = ''
 
         # run through file
         with open(xml_file, 'r') as file:
@@ -281,13 +291,16 @@ class DataBase:
                     if not correctly_formatted:
                         continue
 
-                    # replace existing if earlier
-                    if date:
-                        old_dtime = datetime.strptime(date, formats[0])
-                        if dtime < old_dtime:
-                            date = partial_date
+                    # save dates
+                    if not oldest_date:
+                        oldest_date = newest_date = partial_date
                     else:
-                        date = partial_date
+                        oldest = datetime.strptime(oldest_date, formats[0])
+                        newest = datetime.strptime(newest_date, formats[0])
+                        if oldest > dtime:  # current date is oldest observed
+                            oldest_date = partial_date
+                        if newest < dtime:  # current date is newest observed
+                            newest_date = partial_date
 
                 # extract title
                 elif match := regex(line, 'ArticleTitle'):
@@ -307,24 +320,26 @@ class DataBase:
                 elif line == '</PubmedArticle>':
 
                     # check if is a recent article
+                    oldest_floor = self._start_year - year_differential
                     recent = (
-                        int(date[0:4]) >= self._start_year
-                        if date
-                        else False
+                        newest_date
+                        and int(newest_date[0:4]) >= self._start_year
+                        and int(oldest_date[0:4]) >= oldest_floor
                     )
 
                     # save
                     if pmid and title and recent:
                         data.append([
                             pmid,
-                            date,
+                            newest_date,
                             title,
                             abstract,
                             keywords,
                         ])
 
                     # reset fields for next article
-                    pmid = date = title = abstract = keywords = ''
+                    pmid = oldest_date = newest_date = title = abstract \
+                        = keywords = ''
 
             # return as df
             cols = ['PMID', 'Date', 'Title', 'Abstract', 'Keywords']
