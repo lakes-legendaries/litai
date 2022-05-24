@@ -251,7 +251,7 @@ class DataBase:
 
         # initialize data dictionary and fields
         data = []
-        pmid = oldest_date = newest_date = title = abstract = keywords = ''
+        pmid = date = title = abstract = keywords = ''
 
         # run through file
         with open(xml_file, 'r') as file:
@@ -269,11 +269,11 @@ class DataBase:
                         pmid = match
 
                 # extract date
-                elif match := regex(line, 'Year'):
+                elif not date and (match := regex(line, 'Year')):
                     partial_date = match
-                elif match := regex(line, 'Month'):
+                elif not date and (match := regex(line, 'Month')):
                     partial_date += '-' + match
-                elif match := regex(line, 'Day'):
+                elif not date and (match := regex(line, 'Day')):
                     partial_date += '-' + match
 
                     # format date
@@ -291,16 +291,8 @@ class DataBase:
                     if not correctly_formatted:
                         continue
 
-                    # save dates
-                    if not oldest_date:
-                        oldest_date = newest_date = partial_date
-                    else:
-                        oldest = datetime.strptime(oldest_date, formats[0])
-                        newest = datetime.strptime(newest_date, formats[0])
-                        if oldest > dtime:  # current date is oldest observed
-                            oldest_date = partial_date
-                        if newest < dtime:  # current date is newest observed
-                            newest_date = partial_date
+                    # save date
+                    date = partial_date
 
                 # extract title
                 elif match := regex(line, 'ArticleTitle'):
@@ -320,26 +312,20 @@ class DataBase:
                 elif line == '</PubmedArticle>':
 
                     # check if is a recent article
-                    oldest_floor = self._start_year - year_differential
-                    recent = (
-                        newest_date
-                        and int(newest_date[0:4]) >= self._start_year
-                        and int(oldest_date[0:4]) >= oldest_floor
-                    )
+                    recent = int(date[0:4]) >= self._start_year
 
                     # save
                     if pmid and title and recent:
                         data.append([
                             pmid,
-                            newest_date,
+                            date,
                             title,
                             abstract,
                             keywords,
                         ])
 
                     # reset fields for next article
-                    pmid = oldest_date = newest_date = title = abstract \
-                        = keywords = ''
+                    pmid = date = title = abstract = keywords = ''
 
             # return as df
             cols = ['PMID', 'Date', 'Title', 'Abstract', 'Keywords']
