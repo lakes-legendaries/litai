@@ -93,7 +93,7 @@ class DataBase:
 
         # process files
         total = len(self._file_list)
-        for n, server_file in enumerate(sorted(self._file_list)):
+        for n, server_file in enumerate(reversed(sorted(self._file_list))):
 
             # pull file from server
             local_file = self.__class__._get_file(server_file)
