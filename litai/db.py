@@ -268,7 +268,10 @@ class DataBase:
                 pass
 
             # run through article
-            while (line := file.readline().strip()):
+            while line := file.readline():
+
+                # strip whitespace
+                line = line.strip()
 
                 # extract pmid
                 if len(pmid) == 0:
