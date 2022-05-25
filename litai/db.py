@@ -264,7 +264,7 @@ class DataBase:
         with open(xml_file, 'r') as file:
 
             # skip header
-            while (line := file.readline().strip()) != '<PubmedArticle>':
+            while file.readline().strip() != '<PubmedArticle>':
                 pass
 
             # run through article
@@ -285,7 +285,7 @@ class DataBase:
                     partial_date += '-' + match
                 elif in_pub_date and (match := regex(line, 'Day')):
                     partial_date += '-' + match
-                elif line == r'</PubDate>':
+                elif line.strip() == r'</PubDate>':
                     in_pub_date = False
 
                     # format date
