@@ -244,13 +244,20 @@ class DataBase:
                 return DataFrame()
 
         # define date parsing strings
-        formats = [r'%Y-%m-%d', r'%Y-%b-%d']
+        formats = [
+            r'%Y-%m-%d',
+            r'%Y-%b',
+            r'%Y-%b-%d',
+            r'%Y-%B',
+            r'%Y-%B-%d',
+        ]
 
         # get shorthand for regex fun
         regex = self.__class__._regex
 
         # initialize data dictionary and fields
         data = []
+        in_pub_date = False
         pmid = date = title = abstract = keywords = ''
 
         # run through file
@@ -269,12 +276,17 @@ class DataBase:
                         pmid = match
 
                 # extract date
-                elif not date and (match := regex(line, 'Year')):
+                elif line.strip() == r'<PubDate>':
+                    in_pub_date = True
+                    partial_date = ''
+                elif in_pub_date and (match := regex(line, 'Year')):
                     partial_date = match
-                elif not date and (match := regex(line, 'Month')):
+                elif in_pub_date and (match := regex(line, 'Month')):
                     partial_date += '-' + match
-                elif not date and (match := regex(line, 'Day')):
+                elif in_pub_date and (match := regex(line, 'Day')):
                     partial_date += '-' + match
+                elif line.strip() == r'</PubDate>':
+                    in_pub_date = False
 
                     # format date
                     correctly_formatted = False
@@ -312,7 +324,7 @@ class DataBase:
                 elif line == '</PubmedArticle>':
 
                     # check if is a recent article
-                    recent = int(date[0:4]) >= self._start_year
+                    recent = date and int(date[0:4]) >= self._start_year
 
                     # save
                     if pmid and title and recent:
@@ -325,6 +337,7 @@ class DataBase:
                         ])
 
                     # reset fields for next article
+                    in_pub_date = False
                     pmid = date = title = abstract = keywords = ''
 
             # return as df
