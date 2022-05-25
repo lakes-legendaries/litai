@@ -88,7 +88,11 @@ class SearchEngine:
                         'Abstract',
                         'Keywords',
                     ]
-                ])
+                ]) + (
+                    f', {scores_table}.Score'
+                    if scores_table
+                    else ''
+                )
             } FROM {self._articles_table}
         """
 
