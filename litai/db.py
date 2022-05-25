@@ -268,10 +268,7 @@ class DataBase:
                 pass
 
             # run through article
-            while line := file.readline():
-
-                # strip whitespace
-                line = line.strip()
+            while (line := file.readline().strip()):
 
                 # extract pmid
                 if len(pmid) == 0:
@@ -288,7 +285,7 @@ class DataBase:
                     partial_date += '-' + match
                 elif in_pub_date and (match := regex(line, 'Day')):
                     partial_date += '-' + match
-                elif line.strip() == r'</PubDate>':
+                elif line == r'</PubDate>':
                     in_pub_date = False
 
                     # format date
