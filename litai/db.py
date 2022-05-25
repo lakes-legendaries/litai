@@ -199,8 +199,6 @@ class DataBase:
     def _extract_data(
         self,
         xml_file: str,
-        *,
-        year_differential: int = 5,
     ) -> DataFrame:
         """Extract structured data from xml file
 
@@ -208,11 +206,6 @@ class DataBase:
         ----------
         xml_file: str
             xml file
-        year_differential: int, optional, default=10
-            Only keep articles if their first date in the system is >=
-            self._start_date + year_differential. This stops us from including
-            articles that are very old, but were just published online
-            recently.
 
         Returns
         -------
@@ -225,23 +218,6 @@ class DataBase:
             #. Abstract
             #. Keywords
         """
-
-        # check if file contains recent data
-        with open(xml_file, 'r') as file:
-
-            # read file
-            data = file.read()
-
-            # check for articles in recent years
-            recent = False
-            for year in range(self._start_year, datetime.now().year+1):
-                if f'<Year>{year}</Year>' in data:
-                    recent = True
-                    break
-
-            # return empty if no recent articles
-            if not recent:
-                return DataFrame()
 
         # define date parsing strings
         formats = [
@@ -268,7 +244,10 @@ class DataBase:
                 pass
 
             # run through article
-            while (line := file.readline().strip()):
+            while line := file.readline():
+
+                # strip whitespace
+                line = line.strip()
 
                 # extract pmid
                 if len(pmid) == 0:
@@ -276,7 +255,7 @@ class DataBase:
                         pmid = match
 
                 # extract date
-                elif line.strip() == r'<PubDate>':
+                elif line == r'<PubDate>':
                     in_pub_date = True
                     partial_date = ''
                 elif in_pub_date and (match := regex(line, 'Year')):
@@ -285,7 +264,7 @@ class DataBase:
                     partial_date += '-' + match
                 elif in_pub_date and (match := regex(line, 'Day')):
                     partial_date += '-' + match
-                elif line.strip() == r'</PubDate>':
+                elif line == r'</PubDate>':
                     in_pub_date = False
 
                     # format date
