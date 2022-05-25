@@ -6,7 +6,7 @@ from typing import Any
 
 from nptyping import NDArray
 from pandas import DataFrame
-from sklearn.linear_model import LinearRegression
+from sklearn.svm import LinearSVR
 from vhash import VHash
 
 
@@ -36,7 +36,7 @@ class TokenRegressor:
         text = self.__class__._get_text(X)
         self._tokenizer = VHash().fit(text, y)
         numeric = self._tokenizer.transform(text)
-        self._model = LinearRegression().fit(numeric, y)
+        self._model = LinearSVR(max_iter=int(1E6)).fit(numeric, y)
         return self
 
     def predict(

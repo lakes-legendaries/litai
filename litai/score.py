@@ -125,9 +125,9 @@ class ArticleScorer(SearchEngine):
         ))
 
         # make labels
-        pos_labels = [1] * pn_dfs[0].shape[0]
-        neg_labels = [0] * pn_dfs[1].shape[0]
-        rand_labels = [-1] * rand_df.shape[0]
+        pos_labels = [2] * pn_dfs[0].shape[0]
+        neg_labels = [1] * pn_dfs[1].shape[0]
+        rand_labels = [0] * rand_df.shape[0]
 
         # format
         df = concat((pn_dfs[0], pn_dfs[1], rand_df))
