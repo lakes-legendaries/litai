@@ -3,66 +3,47 @@
 # error on failure
 set -e
 
-# hush login
-touch .hushlogin
-
 # setup unix
-sudo apt-get update -y
-sudo apt-get upgrade -y
-sudo apt-get dist-upgrade -y
-sudo apt-get install -y \
-    ca-certificates \
-    curl \
-    g++ \
-    git \
-    gnupg \
-    lsb-release \
-    snapd \
-    software-properties-common \
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl git gnupg lsb-release
 
-# install python3.9
-sudo add-apt-repository -y ppa:deadsnakes/ppa
-sudo apt install -y python3.9 python3.9-dev python3.9-venv
+# access docker repository
+KEYFILE=/usr/share/keyrings/docker-archive-keyring.gpg
+sudo rm -f $KEYFILE
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o $KEYFILE
+echo "deb [arch=$(dpkg --print-architecture) signed-by=$KEYFILE] \
+    https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+    | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# install docker engine
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # install azure cli
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 # get ssl/tls certificates for secure https connection
+sudo apt-get install -y snapd
 sudo snap install core
 sudo snap refresh core
 sudo apt-get remove -y certbot
 sudo snap install --classic certbot
 sudo ln --force -s /snap/bin/certbot /usr/bin/certbot
-sudo certbot certonly \
+sudo /usr/bin/certbot certonly \
     --standalone -n --domains litai.eastus.cloudapp.azure.com \
     --agree-tos --email mike@lakeslegendaries.com
 
-# allow access to certificates
-sudo chmod 777 -R /etc/letsencrypt/
+# create startup command
+REPO=https://raw.githubusercontent.com/lakes-legendaries/litai
+FILE=main/webserver/startup.sh
+curl $REPO/$FILE > ~/startup.sh
+chmod +x ~/startup.sh
 
-# edit crontab
-CRONTAB_DIR=/var/spool/cron/crontabs
-SCRIPTS_DIR=/home/mike/litai/webserver
-sudo rm -f $CRONTAB_DIR/*
-echo "@reboot $SCRIPTS_DIR/reboot.sh" | sudo tee $CRONTAB_DIR/mike
-echo "0 4 * * * $SCRIPTS_DIR/update.sh" | sudo tee --append $CRONTAB_DIR/mike
-echo "0 3 1 * * reboot" | sudo tee $CRONTAB_DIR/root
-for CRONTAB in root mike; do
-    sudo chmod 0600 $CRONTAB_DIR/$CRONTAB
-done
-
-# clone repo, download database
-export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
-git clone https://github.com/lakes-legendaries/litai.git
-az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
-
-# create virtual environment
-cd /home/mike/litai
-rm -rfd .venv
-python3.9 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+# schedule startup command, and plan monthly reboot
+echo "@reboot $HOME/startup.sh" | sudo tee /var/spool/cron/crontabs/$USER
+echo "0 0 1 * * reboot" | sudo tee /var/spool/cron/crontabs/root
+sudo chmod 0600 /var/spool/cron/crontabs/$USER
+sudo chmod 0600 /var/spool/cron/crontabs/root
 
 # run startup script
-$SCRIPTS_DIR/reboot.sh &
+~/startup.sh

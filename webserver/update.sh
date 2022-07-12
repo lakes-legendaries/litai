@@ -53,7 +53,7 @@ cmd/get-files
 python litai/db.py --append
 
 # update scoring tables
-for TABLE in hbot senescence; do
+for TABLE in covid hbot senescence; do
     echo "$(date +%F@%T:) Updating $TABLE table"
     python litai/score.py config/$TABLE.yaml
 done
