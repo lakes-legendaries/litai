@@ -33,17 +33,20 @@ sudo /usr/bin/certbot certonly \
     --standalone -n --domains litai.eastus.cloudapp.azure.com \
     --agree-tos --email mike@lakeslegendaries.com
 
-# create startup command
-REPO=https://raw.githubusercontent.com/lakes-legendaries/litai
-FILE=main/webserver/startup.sh
-curl $REPO/$FILE > ~/startup.sh
-chmod +x ~/startup.sh
+# clone repo
+rm -rfd litai
+git clone https://github.com/lakes-legendaries/litai.git
+
+# download database
+export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
+az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
 
 # schedule startup command, and plan monthly reboot
-echo "@reboot $HOME/startup.sh" | sudo tee /var/spool/cron/crontabs/$USER
+echo "@reboot /home/mike/litai/startup.sh" | sudo tee /var/spool/cron/crontabs/$USER
+echo "0 1 * * * /home/mike/litai/update.sh" | sudo tee -a /var/spool/cron/crontabs/$USER
 echo "0 0 1 * * reboot" | sudo tee /var/spool/cron/crontabs/root
 sudo chmod 0600 /var/spool/cron/crontabs/$USER
 sudo chmod 0600 /var/spool/cron/crontabs/root
 
 # run startup script
-~/startup.sh
+/home/mike/litai/startup.sh

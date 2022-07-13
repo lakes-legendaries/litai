@@ -3,8 +3,14 @@
 # exit on error
 set -e
 
-# renew certificates
+# renew certificates, copy into secrets
 sudo certbot renew
+for FILE in \
+    /etc/letsencrypt/live/litai.eastus.cloudapp.azure.com/fullchain.pem \
+    /etc/letsencrypt/live/litai.eastus.cloudapp.azure.com/privkey.pem \
+; do
+    sudo cp $FILE ~/secrets/
+done
 
 # remove unused docker images and containers
 CONTAINERS="$(sudo docker ps -q)"
@@ -13,25 +19,7 @@ if [ ! -z "$CONTAINERS" ]; then
 fi
 sudo docker system prune --force --all
 
-# clone repo
-rm -rfd litai
-git clone https://github.com/lakes-legendaries/litai.git
-
-# download database
-export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
-az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
-
-# copy certs into secrets
-for FILE in \
-    /etc/letsencrypt/live/litai.eastus.cloudapp.azure.com/fullchain.pem \
-    /etc/letsencrypt/live/litai.eastus.cloudapp.azure.com/privkey.pem \
-; do
-    sudo cp $FILE ~/secrets/
-done
-
-# build docker image
+# build docker image, start api service
 cd litai
 sudo docker build -t litai .
-
-# run docker container
 sudo docker run -dp 443:443 -v ~/secrets:/secrets -v $(pwd)/data:/code/data litai
