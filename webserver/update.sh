@@ -4,7 +4,7 @@
 set -e
 
 # update litai code
-cd litai
+cd /home/mike/litai
 git pull origin main
 
 # rebuild docker image
