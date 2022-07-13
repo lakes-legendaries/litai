@@ -1,6 +1,15 @@
 /* DEBUGGING */
 var debugging = false;
 
+/* PRE-FILL DATES */
+var today = new Date()
+var tomorrow = new Date();
+var last_week = new Date();
+tomorrow.setDate(today.getDate() + 1);
+last_week.setDate(today.getDate() - 30);
+document.getElementById('min_date').valueAsDate = last_week;
+document.getElementById('max_date').valueAsDate = tomorrow;
+
 /* API URL*/
 var api_url = "https://litai.eastus.cloudapp.azure.com/search/";
 
@@ -61,3 +70,6 @@ function show_results(request) {
     document.getElementById("results").innerHTML = html;
     document.getElementById("results-box").style = "display: block";
 }
+
+/* Query API on Startup */
+query_api();

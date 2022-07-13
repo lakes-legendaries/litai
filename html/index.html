@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:wght@300&display=swap" rel="stylesheet">
-    <script src="litai.js"></script>
 </head>
 
 <body>
@@ -22,20 +21,30 @@
 <div class="centered">
     
     <!-- Keywords -->
-    <input type="text" name="keywords" id="keywords" placeholder="Keywords (Optional)">
+    <label class="p1">Keywords (Optional): </label>
+    <br/>
+    <input type="text" name="keywords" id="keywords">
     <br />
 
     <!-- Date -->
-    <input type="text" name="min_date" id="min_date" placeholder="From (YYYY-MM-DD)">
+    <label class="p1">Since: </label>
+    <br/>
+    <input type="date" name="min_date" id="min_date">
     <br />
-    <input type="text" name="max_date" id="max_date" placeholder="To (YYYY-MM-DD)">
+    <label class="p1">Until (Optional): </label>
+    <br />
+    <input type="date" name="max_date" id="max_date">
     <br />
 
     <!-- Table -->
-    <input type="radio" id="senescence" name="table" value="senescence" checked="checked">
-    <label for="senescence" class="p1">Senescence Table</label><br>
-    <input type="radio" id="hbot" name="table" value="hbot">
-    <label for="hbot" class="p1">Hyperbaric O<sub>2</sub> Table</label><br>
+    <label class="p1">Table: </label>
+    <br />
+    <select class="select" id="senescence" name="table">
+        <option value="senescence">Senescence</option>
+        <option value="hbot">Hyperbaric Oxygen</option>
+        <option value="covid">COVID-19</option>
+    </select>
+    <br />
 
     <!-- Search Button -->
     <button class="button" onclick="query_api()">
@@ -64,6 +73,9 @@
 <p class="p3">Developed by Michael Powell PhD</p>
 <p class="p3">Copyright &copy; 2022 Lake's Legendaries LLC</p>
 </div>
+
+<!-- Load JS -->
+<script src="litai.js"></script>
 
 </body>
 </html>

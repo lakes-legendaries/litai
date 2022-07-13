@@ -73,6 +73,19 @@ input[type=text] {
     font-family: var(--font-family)
 }
 
+input[type=date], select {
+    width: 50%;
+    padding: var(--input-height) var(--input-width);
+    margin: var(--margin-tight) 0;
+    box-sizing: border-box;
+    border: 2px solid var(--color-emphasis);
+    border-radius: 4px;
+    text-align: center;
+    color: var(--color-std);
+    font-size: var(--font-size-p1);
+    font-family: var(--font-family)
+}
+
 .button {
     background-color: var(--color-fill);
     border: none;
