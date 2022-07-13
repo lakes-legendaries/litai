@@ -23,8 +23,8 @@ done
 
 # upload db and website
 export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
-az storage blob upload -f data/pubmed.db -c data -n pubmed.db
-az storage blob upload-batch -s html/ -d \$web
+az storage blob upload -f data/pubmed.db -c data -n pubmed.db --overwrite
+az storage blob upload-batch -s html/ -d \$web --overwrite
 
 # restart api
 /home/mike/litai/startup.sh
