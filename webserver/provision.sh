@@ -42,11 +42,11 @@ export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserve
 az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
 
 # schedule startup command, and plan monthly reboot
-echo "@reboot /home/mike/litai/startup.sh" | sudo tee /var/spool/cron/crontabs/$USER
-echo "0 1 * * * /home/mike/litai/update.sh" | sudo tee -a /var/spool/cron/crontabs/$USER
+echo "@reboot /home/mike/litai/webserver/startup.sh" | sudo tee /var/spool/cron/crontabs/$USER
+echo "0 1 * * * /home/mike/litai/webserver/update.sh" | sudo tee -a /var/spool/cron/crontabs/$USER
 echo "0 0 1 * * reboot" | sudo tee /var/spool/cron/crontabs/root
 sudo chmod 0600 /var/spool/cron/crontabs/$USER
 sudo chmod 0600 /var/spool/cron/crontabs/root
 
 # run startup script
-/home/mike/litai/startup.sh
+/home/mike/litai/webserver/startup.sh
