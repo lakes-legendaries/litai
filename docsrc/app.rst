@@ -31,13 +31,14 @@ running:
 
 This command:
 
-#. Installs python
+#. Installs the docker engine
 #. Installs the Azure CLI
 #. Uses certbot to create a secure https connection
 #. Schedules monthly reboots
 #. Schedules daily data/website updates
-#. Triggers a reboot script :code:`webserver/reboot.sh` to start the api on
+#. Triggers a startup script :code:`webserver/startup.sh` to start the api on
    system startup
+#. Clones this repo, and builds and launches this api docker service.
 
 Please note that this command expects:
 
