@@ -124,14 +124,19 @@ class DataBase:
 
         # remove repeated entries
         engine.execute("""
-            DELETE FROM ARTICLES
+            CREATE TABLE TEMP_ARTICLES
+            AS SELECT * FROM ARTICLES
             WHERE _ROWID_ NOT IN (
                 SELECT MIN(_ROWID_) FROM ARTICLES
                 GROUP BY PMID
             )
         """)
+        engine.execute("""DROP TABLE ARTICLES""")
+        engine.execute("""
+            ALTER TABLE TEMP_ARTICLES
+            RENAME TO ARTICLES
+        """)
         engine.commit()
-        engine.execute("""VACUUM""")
 
         # save files used to make table
         engine.execute("""
@@ -150,9 +155,15 @@ class DataBase:
         # make indices
         for col in ['PMID', 'Date', 'Title']:
             engine.execute(f"""
-                CREATE INDEX IF NOT EXISTS ARTICLES_{col}
+                DROP INDEX IF EXISTS ARTICLES_{col}
+            """)
+            engine.execute(f"""
+                CREATE INDEX ARTICLES_{col}
                 ON ARTICLES({col})
             """)
+
+        # minimize db size
+        engine.execute("""VACUUM""")
 
         # save
         engine.commit()
