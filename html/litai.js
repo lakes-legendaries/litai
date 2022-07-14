@@ -31,7 +31,7 @@ function query_api() {
 
     // add in scores table
     url += !has_params? "?": "&";
-    url += "score_table=" + document.getElementById("table_selection").value;
+    url += "scores_table=" + document.getElementById("table_selection").value;
 
     // log url
     if (debugging) {console.log("Querying " + url);}
