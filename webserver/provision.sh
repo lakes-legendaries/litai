@@ -37,9 +37,10 @@ sudo /usr/bin/certbot certonly \
 rm -rfd litai
 git clone https://github.com/lakes-legendaries/litai.git
 
-# download database
+# download database and pmid lists
 export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
 az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
+az storage blob download -f litai/data/senescence_pmids.txt -c data -n senescence_pmids.txt
 
 # schedule startup command, and plan monthly reboot
 sudo rm /var/spool/cron/crontabs/$USER
