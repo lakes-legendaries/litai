@@ -17,7 +17,11 @@ sudo docker run --rm -v $(pwd)/data:/code/data litai
 
 # update scoring tables
 for TABLE in covid hbot senescence; do
-    sudo docker run --rm -v $(pwd)/data:/code/data litai \
+    sudo docker run \
+        --rm \
+        -v $(pwd)/data:/code/data \
+        -v $(pwd)/config:/code/config \
+        litai \
         python litai/score.py config/$TABLE.yaml
 done
 
