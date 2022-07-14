@@ -108,9 +108,14 @@ class DataBase:
             )
 
             # write status
-            count = sqlite3.connect(self._database) \
-                .execute('SELECT MAX(_ROWID_) FROM ARTICLES LIMIT 1') \
+            count = (
+                sqlite3.connect(self._database)
+                .execute(f"""
+                    SELECT MAX(_ROWID_) FROM {self._articles_table}
+                    LIMIT 1
+                """)
                 .fetchone()[0]
+            )
             print(f'{count} articles from {n+1} / {total} files', end='\r')
 
             # clean up
@@ -123,20 +128,20 @@ class DataBase:
         engine = sqlite3.connect(self._database)
 
         # remove repeated entries
-        engine.execute("""
-            CREATE TABLE TEMP_ARTICLES
-            AS SELECT * FROM ARTICLES
-            WHERE _ROWID_ NOT IN (
-                SELECT MIN(_ROWID_) FROM ARTICLES
+        engine.execute(f"""
+            CREATE TABLE TEMP_{self._articles_table}
+            AS SELECT * FROM {self._articles_table}
+            WHERE _ROWID_ IN (
+                SELECT MIN(_ROWID_) FROM {self._articles_table}
                 GROUP BY PMID
             )
         """)
-        engine.execute("""DROP TABLE ARTICLES""")
-        engine.execute("""
-            ALTER TABLE TEMP_ARTICLES
-            RENAME TO ARTICLES
+        engine.execute(f"""DROP TABLE {self._articles_table}""")
+        engine.execute(f"""
+            CREATE TABLE {self._articles_table}
+            AS SELECT * FROM TEMP_{self._articles_table}
         """)
-        engine.commit()
+        engine.execute(f"""DROP TABLE TEMP_{self._articles_table}""")
 
         # save files used to make table
         engine.execute("""
@@ -155,17 +160,16 @@ class DataBase:
         # make indices
         for col in ['PMID', 'Date', 'Title']:
             engine.execute(f"""
-                DROP INDEX IF EXISTS ARTICLES_{col}
+                DROP INDEX IF EXISTS {self._articles_table}_{col}
             """)
             engine.execute(f"""
-                CREATE INDEX ARTICLES_{col}
-                ON ARTICLES({col})
+                CREATE INDEX {self._articles_table}_{col}
+                ON {self._articles_table}({col})
             """)
 
         # minimize db size
+        engine.commit()
         engine.execute("""VACUUM""")
-
-        # save
         engine.commit()
 
     @classmethod
