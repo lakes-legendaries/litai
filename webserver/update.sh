@@ -12,7 +12,7 @@ sudo docker build -t litai .
 
 # update pubmed database
 cmd/get-files
-sudo docker run --rm -v $(pwd)/data:/code/data litai
+sudo docker run --rm -v $(pwd)/data:/code/data litai \
     python litai/db.py --append
 
 # update scoring tables
