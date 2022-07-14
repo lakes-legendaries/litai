@@ -36,7 +36,7 @@ class TokenRegressor:
         text = self.__class__._get_text(X)
         self._tokenizer = VHash().fit(text, y)
         numeric = self._tokenizer.transform(text)
-        self._model = LinearSVR(max_iter=int(1E6)).fit(numeric, y)
+        self._model = LinearSVR(max_iter=int(10E3)).fit(numeric, y)
         return self
 
     def predict(

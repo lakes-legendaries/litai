@@ -35,7 +35,7 @@ class ArticleScorer(SearchEngine):
         pos_keywords: Union[list[str], str] = None,
         neg_keywords: Union[list[str], str] = None,
         *,
-        downsample: int = 10000,
+        downsample: int = 3000,
         keyword_limit: int = 3000,
         min_score: float = 0,
         rand_factor: float = 3,
@@ -58,9 +58,10 @@ class ArticleScorer(SearchEngine):
             pull articles with any of these keywords as positive articles
         neg_keywords: Union[str, list[str]], optional, default=None
             pull articles with any of these keywords as negative articles
-        scores_table: str
-        downsample: int, optional, default=10000
+        downsample: int, optional, default=3000
             If not None, then downsample df to have this max number of rows
+        keyword_limit: int, optional, default=3000
+            Max number of keyword articles to pull
         min_score: float, optional, default=0
             Minimum score to be included in spinoff table
         rand_factor: float, optional, default=3
@@ -150,9 +151,9 @@ class ArticleScorer(SearchEngine):
         """Score all articles in table"""
 
         # create table
-        self._con.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
+        self._con.execute(f'DROP TABLE IF EXISTS TEMP_{self._scores_table}')
         self._con.execute(f"""
-            CREATE {self._temp_str} TABLE {self._scores_table} (
+            CREATE TEMPORARY TABLE TEMP_{self._scores_table} (
                 PMID str,
                 Score FLOAT
             )
@@ -174,7 +175,7 @@ class ArticleScorer(SearchEngine):
             ])
             if score_str:
                 self._con.execute(f"""
-                    INSERT INTO {self._scores_table} (PMID, Score)
+                    INSERT INTO TEMP_{self._scores_table} (PMID, Score)
                     VALUES {score_str}
                 """)
 
@@ -188,10 +189,21 @@ class ArticleScorer(SearchEngine):
         # newline
         print('')
 
+        # move from temp table to std table
+        self._con.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
+        self._con.execute(f"""
+            CREATE {self._temp_str} TABLE {self._scores_table}
+            AS SELECT * FROM TEMP_{self._scores_table}
+        """)
+        self._con.execute(f'DROP TABLE TEMP_{self._scores_table}')
+
         # create indices
         for col in ['PMID', 'Score']:
             self._con.execute(f"""
-                CREATE INDEX IF NOT EXISTS {self._scores_table}_{col}
+                DROP INDEX IF EXISTS {self._scores_table}_{col}
+            """)
+            self._con.execute(f"""
+                CREATE INDEX {self._scores_table}_{col}
                 ON {self._scores_table}({col})
             """)
 
