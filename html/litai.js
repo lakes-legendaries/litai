@@ -31,11 +31,7 @@ function query_api() {
 
     // add in scores table
     url += !has_params? "?": "&";
-    if (document.getElementById("senescence").checked) {
-        url += "scores_table=senescence";
-    } else {
-        url += "scores_table=hbot";
-    }
+    url += "score_table=" + document.getElementById("table_selection").value;
 
     // log url
     if (debugging) {console.log("Querying " + url);}
