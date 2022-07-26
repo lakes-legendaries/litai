@@ -43,8 +43,8 @@ az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
 az storage blob download -f litai/data/senescence_pmids.txt -c data -n senescence_pmids.txt
 
 # schedule startup command, and plan monthly reboot
-sudo rm /var/spool/cron/crontabs/$USER
-sudo rm /var/spool/cron/crontabs/root
+sudo rm -f /var/spool/cron/crontabs/$USER
+sudo rm -f /var/spool/cron/crontabs/root
 echo "@reboot /home/mike/litai/webserver/startup.sh" | sudo tee /var/spool/cron/crontabs/$USER
 echo "0 4 * * * /home/mike/litai/webserver/update.sh" | sudo tee -a /var/spool/cron/crontabs/$USER
 echo "0 0 1 * * reboot" | sudo tee /var/spool/cron/crontabs/root
