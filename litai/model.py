@@ -16,7 +16,24 @@ class TokenRegressor:
     This model uses the vhash package to perform fast vector quantization of
     documents, and then uses an sklearn LinearRegression model to score
     articles.
+
+    Parameters
+    ----------
+    model: Any, optional, default=LinearSVR()
+        Model to use for fitting. Pass initialized (which exposes constructor
+        to the calling user), e.g.
+
+        .. code-block:: python
+
+           tr = TokenRegressor(model=LinearSVR(max_iter=1E6))
     """
+    def __init__(
+        self,
+        /,
+        *,
+        model: Any = LinearSVR(max_iter=int(10E3)),
+    ):
+        self._model = model
 
     def fit(
         self,
@@ -36,7 +53,7 @@ class TokenRegressor:
         text = self.__class__._get_text(X)
         self._tokenizer = VHash().fit(text, y)
         numeric = self._tokenizer.transform(text)
-        self._model = LinearSVR(max_iter=int(10E3)).fit(numeric, y)
+        self._model.fit(numeric, y)
         return self
 
     def predict(
