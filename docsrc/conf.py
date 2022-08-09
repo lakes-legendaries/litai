@@ -1,5 +1,5 @@
 project = 'litai'
-version = '0.1.26'
+version = '0.1.27'
 copyright = '2021 Lake\'s Legendaries LLC'
 author = 'Mike Powell PhD'
 
