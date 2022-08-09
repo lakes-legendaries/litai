@@ -6,7 +6,7 @@ from typing import Any
 
 from nptyping import NDArray
 from pandas import DataFrame
-from sklearn.svm import LinearSVR
+from sklearn.linear_model import LinearRegression
 from vhash import VHash
 
 
@@ -19,7 +19,7 @@ class TokenRegressor:
 
     Parameters
     ----------
-    model: Any, optional, default=LinearSVR()
+    model: Any, optional, default=sklearn.linear_model.LinearRegression()
         Model to use for fitting. Pass initialized (which exposes constructor
         to the calling user), e.g.
 
@@ -31,7 +31,7 @@ class TokenRegressor:
         self,
         /,
         *,
-        model: Any = LinearSVR(max_iter=int(10E3)),
+        model: Any = LinearRegression(),
     ):
         self._model = model
 
