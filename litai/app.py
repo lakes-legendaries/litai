@@ -1,3 +1,8 @@
+from datetime import datetime
+import os
+from os import remove
+from os.path import join
+from subprocess import run
 from typing import Optional
 
 from fastapi import FastAPI
@@ -49,3 +54,51 @@ def search(
         }
         for n, article in articles.iterrows()
     }
+
+
+@app.get("/feedback/{action}")
+def feedback(
+    action: str,
+    pmid: Optional[str] = None,
+    table: Optional[str] = None,
+    token: Optional[str] = None,
+):
+    # validate token
+    validated_tokens = open(
+        join(os.environ['SECRETS_DIR'], 'litai-users'),
+        'r',
+    ).read().splitlines()
+    if token not in validated_tokens:
+        return {'Status': 'Invalid Token'}
+
+    # write feedback to file
+    fname = datetime().now().isoformat()
+    with open(fname, 'w') as file:
+        print(f'action: {action}', file=file)
+        print(f'pmid: {pmid}', file=file)
+        print(f'table: {table}', file=file)
+        print(f'token: {token}', file=file)
+
+    # upload to azure
+    run(
+        [
+            'az',
+            'storage',
+            'blob',
+            'upload',
+            '-f',
+            fname,
+            '-c',
+            'feedback',
+            '-n',
+            fname,
+        ],
+        capture_output=True,
+        check=True,
+    )
+
+    # clean-up
+    remove(fname)
+
+    # return success
+    return {'Status': 'Success'}
