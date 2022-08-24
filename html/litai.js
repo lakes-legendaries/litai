@@ -53,6 +53,7 @@ function query_api() {
 function show_results(request) {
     var html = ""
     var json = JSON.parse(request.responseText)
+    has_field = false;
     for (field in json) {
         html += "<br />";
         html += "<a class=\"p1\" ";
@@ -66,6 +67,10 @@ function show_results(request) {
         html += "</p><p class=\"p2\">";
         html += json[field]["Abstract"];
         html += "</p>";
+        has_field = true;
+    }
+    if (!has_field) {
+        html += "<p class=\"p2\">No articles match your search query.</p>";
     }
     document.getElementById("results").innerHTML = html;
     document.getElementById("results-box").style = "display: block";
