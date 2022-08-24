@@ -41,13 +41,11 @@ def search(
     )
     return {
         n: {
-            'PMID': pmid,
-            'Title': title,
-            'Abstract': abstract,
+            'PMID': article['PMID'],
+            'Title': article['Title'],
+            'Abstract': article['Abstract'],
+            'Date': article['Date'],
+            'Score': article['Score'],
         }
-        for n, (pmid, title, abstract) in enumerate(zip(
-            articles['PMID'],
-            articles['Title'],
-            articles['Abstract'],
-        ))
+        for n, article in articles.iterrows()
     }
