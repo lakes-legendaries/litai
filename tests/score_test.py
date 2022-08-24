@@ -15,7 +15,7 @@ def test_scoring():
             min_score=None,
             rand_factor=0,
         )
-        df = scorer.search(scores_table='mouse', min_score=1)
+        df = scorer.search(scores_table='mouse', min_score=1, limit=1000)
         term_freq = [
             array([
                 df[field].str.contains(term).to_numpy()
