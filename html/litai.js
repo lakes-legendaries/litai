@@ -116,7 +116,10 @@ function show_results(request) {
 /* Offer feedback */
 function feedback(action, pmid) {
     var request = new XMLHttpRequest();
-    const url = "https://litai.eastus.cloudapp.azure.com/feedback/" + action + "/" + pmid + "?token=" + token;
+    const url = "https://litai.eastus.cloudapp.azure.com/feedback/" + action
+        + "?pmid=" + pmid
+        + "&table=" + document.getElementById("table_selection").value
+        + "&token=" + token;
     request.open("POST", url, true);
     request.send(null);
 }
