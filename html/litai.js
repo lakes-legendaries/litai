@@ -49,31 +49,76 @@ function query_api() {
     request.send(null);
 }
 
+/* Read user token from URL */
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const token = urlParams.get("token");
+
 /* Show results*/
 function show_results(request) {
-    var html = ""
+
+    // parse json response
     var json = JSON.parse(request.responseText)
+
+    // build html results output
+    var html = "";
     has_field = false;
     for (field in json) {
+
+        // write title, as a link
         html += "<br />";
         html += "<a class=\"p1\" ";
         html += "href=https://pubmed.ncbi.nlm.nih.gov/" + json[field]["PMID"] + "/ ";
         html += "target=\"_blank\" rel=\"noopener noreferrer\">";
         html += json[field]["Title"];
-        html += "</a><p class=\"p2\">";
+        html += "</a>"
+
+        // write meta-data
+        html += "<p class=\"p2\">";
         html += "PMID: " + json[field]["PMID"] + " &middot; ";
         html += "Score: " + json[field]["Score"].toPrecision(3) + " &middot; ";
         html += "Date: " + json[field]["Date"];
-        html += "</p><p class=\"p2\">";
+        html += "</p>"
+
+        // write abstract
+        html +="<p class=\"p2\">";
         html += json[field]["Abstract"];
         html += "</p>";
+
+        // offer feedback options
+        if (token != null) {
+            accept_target = "feedback('accept', " + json[field]["PMID"] + ")";
+            reject_target = "feedback('reject', " + json[field]["PMID"] + ")";
+            html += "<a class=\"p2\" onclick=\"" + accept_target + "\">";
+            html += "<u>Accept Article</u>";
+            html += "</a>"
+            html += " &middot; ";
+            html += "<a class=\"p2\" onclick=\"" + reject_target + "\">";
+            html += "<u>Reject Article</u>";
+            html += "</a>"
+            html += "<br />";
+        }
+
+        // mark that article(s) have been found
         has_field = true;
     }
+
+    // write error message
     if (!has_field) {
         html += "<p class=\"p2\">No articles match your search query.</p>";
     }
+
+    // show results on webpage
     document.getElementById("results").innerHTML = html;
     document.getElementById("results-box").style = "display: block";
+}
+
+/* Offer feedback */
+function feedback(action, pmid) {
+    var request = new XMLHttpRequest();
+    const url = "https://litai.eastus.cloudapp.azure.com/feedback/" + action + "/" + pmid + "?token=" + token;
+    request.open("POST", url, true);
+    request.send(null);
 }
 
 /* Query API on Startup */
