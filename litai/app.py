@@ -22,7 +22,7 @@ app.add_middleware(
 def home():
     return {
         "Prompt": "Welcome to LitAI!",
-        "Version": "Alpha Testing",
+        "Version": "0.1.29",
     }
 
 
