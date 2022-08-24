@@ -60,6 +60,10 @@ function show_results(request) {
         html += "target=\"_blank\" rel=\"noopener noreferrer\">";
         html += json[field]["Title"];
         html += "</a><p class=\"p2\">";
+        html += "PMID: " + json[field]["PMID"] + " &middot; ";
+        html += "Score: " + json[field]["Score"].toPrecision(3) + " &middot; ";
+        html += "Date: " + json[field]["Date"];
+        html += "</p><p class=\"p2\">";
         html += json[field]["Abstract"];
         html += "</p>";
     }
