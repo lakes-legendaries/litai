@@ -26,8 +26,10 @@ app.add_middleware(
 @app.get("/")
 def home():
     return {
-        "Prompt": "Welcome to LitAI!",
+        "Package": "LitAI",
         "Version": "0.1.29",
+        "Author": "Mike Powell PhD",
+        "Email": "mike@lakeslegendaries.com",
     }
 
 
@@ -81,7 +83,7 @@ def feedback(
         }
 
     # write feedback to file
-    fname = datetime().now().isoformat()
+    fname = datetime.now().isoformat()
     with open(fname, 'w') as file:
         print(f'action: {action}', file=file)
         print(f'pmid: {pmid}', file=file)
