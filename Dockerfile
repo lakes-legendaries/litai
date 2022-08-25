@@ -14,6 +14,9 @@ RUN python -m pip install -r requirements.txt
 RUN rm requirements.txt
 ENV PYTHONPATH .
 
+# setup azure cli
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
 # setup app
 ENV SECRETS_DIR /secrets
 COPY litai/ litai/
