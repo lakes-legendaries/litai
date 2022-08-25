@@ -96,7 +96,7 @@ function show_results(request) {
             html += "<a class=\"p2\" onclick=\"" + reject_target + "\">";
             html += "<u>Reject Article</u>";
             html += "</a>"
-            html += "<br />";
+            html += "<p class=\"p2\" id=\"feedback_" + json[field]["PMID"] + "\"></p>";
         }
 
         // mark that article(s) have been found
@@ -120,8 +120,9 @@ function feedback(action, pmid) {
         + "?pmid=" + pmid
         + "&table=" + document.getElementById("table_selection").value
         + "&token=" + token;
-    request.open("POST", url, true);
+    request.open("GET", url, true);
     request.send(null);
+    document.getElementById("feedback_" + pmid).textContent += "Thanks! Feedback saved.";
 }
 
 /* Query API on Startup */
