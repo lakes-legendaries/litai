@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 from os import remove
-from os.path import join
+from os.path import isfile, join
 from subprocess import run
 from typing import Optional
 
@@ -63,13 +63,21 @@ def feedback(
     table: Optional[str] = None,
     token: Optional[str] = None,
 ):
-    # validate token
-    validated_tokens = open(
-        join(os.environ['SECRETS_DIR'], 'litai-users'),
-        'r',
-    ).read().splitlines()
+    # make sure validated users file exists
+    users_fname = join(os.environ['SECRETS_DIR'], 'litai-users')
+    if not isfile(users_fname):
+        return {
+            'Status': 'Failed',
+            'Reason': f'File {users_fname} DNE',
+        }
+
+    # check if token is valid
+    validated_tokens = open(users_fname, 'r').read().splitlines()
     if token not in validated_tokens:
-        return {'Status': 'Invalid Token'}
+        return {
+            'Status': 'Failed',
+            'Reason': 'Invalid Token',
+        }
 
     # write feedback to file
     fname = datetime().now().isoformat()
@@ -101,4 +109,4 @@ def feedback(
     remove(fname)
 
     # return success
-    return {'Status': 'Success'}
+    return {'Status': 'Succeeded'}
