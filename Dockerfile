@@ -5,7 +5,7 @@ WORKDIR /code
 
 # setup unix
 RUN apt-get update
-RUN apt-get install -y g++ gzip wget
+RUN apt-get install -y curl g++ gzip wget
 
 # setup python
 COPY requirements.txt .
