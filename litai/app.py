@@ -27,7 +27,7 @@ app.add_middleware(
 def home():
     return {
         "Package": "LitAI",
-        "Version": "0.1.29",
+        "Version": "0.1.30",
         "Author": "Mike Powell PhD",
         "Email": "mike@lakeslegendaries.com",
     }
