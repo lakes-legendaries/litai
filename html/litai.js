@@ -74,7 +74,7 @@ function show_results(request) {
         html += "</a>"
 
         // write meta-data
-        html += "<p class=\"p2\">";
+        html += "<p class=\"p3\">";
         html += "PMID: " + json[field]["PMID"] + " &middot; ";
         html += "Score: " + json[field]["Score"].toPrecision(3) + " &middot; ";
         html += "Date: " + json[field]["Date"];
