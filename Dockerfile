@@ -15,7 +15,7 @@ RUN rm requirements.txt
 ENV PYTHONPATH .
 
 # setup azure cli
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # setup app
 ENV SECRETS_DIR /secrets
