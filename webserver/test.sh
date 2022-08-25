@@ -19,6 +19,5 @@ docker build -t litai . -f Dockerfile.tmp
 # remove temp dockerfile
 rm Dockerfile.tmp
 
-# build docker image, start api service
-docker build -t litai .
+# start api service
 docker run -dp 80:80 -v ~/secrets:/secrets -v $(pwd)/data:/code/data litai
