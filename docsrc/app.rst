@@ -16,6 +16,15 @@ We use blob storage and the azure cli to automatically update the website when
 the code and data files are updated (daily). See :code:`webserver/update.sh`
 for the implementation.
 
+If a valid token is provided as a URL parameter, then feedback links are
+automatically included with each article. E.g. if you use the URL
+
+.. code-block:: text
+
+   https://litaifileserver.z13.web.core.windows.net/?token=VALID_TOKEN
+
+then you will get options for accepting or rejecting articles.
+
 ***
 API
 ***
@@ -46,3 +55,6 @@ Please note that this command expects:
    :code:`litai.eastus.cloudapp.azure.com`
 #. Ports 80 and 443 to be open
 #. The main user to be named :code:`mike`
+
+Additionally, if you want to enable the feedback mechanisms, place a file
+containing the list of valid tokens in :code:`~/secrets/litai-users`.
