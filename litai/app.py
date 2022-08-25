@@ -68,7 +68,8 @@ def feedback(
     if not isfile(users_fname):
         return {
             'Status': 'Failed',
-            'Reason': f'File {users_fname} DNE',
+            'Reason': 'Could not validate token. '
+                      f'File {users_fname} DNE',
         }
 
     # check if token is valid
@@ -86,6 +87,22 @@ def feedback(
         print(f'pmid: {pmid}', file=file)
         print(f'table: {table}', file=file)
         print(f'token: {token}', file=file)
+
+    # authenticate with azure
+    az_key = 'AZURE_STORAGE_CONNECTION_STRING'
+    if az_key not in os.environ:
+
+        # load in azure authentication token
+        conn_fname = join(os.environ['SECRETS_DIR'], 'litai-fileserver')
+        if not isfile(conn_fname):
+            return {
+                'Status': 'Failed',
+                'Reason': 'Could not authenticate with Azure. '
+                          f'File {conn_fname} DNE',
+            }
+
+        # add to env vars
+        os.environ[az_key] = open(conn_fname, 'r').read()
 
     # upload to azure
     run(
