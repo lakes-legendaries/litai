@@ -25,6 +25,12 @@ automatically included with each article. E.g. if you use the URL
 
 then you will get options for accepting or rejecting articles.
 
+.. note::
+
+   When we retrain the model, we only accept feedback from users who provide a
+   validated token. Contact us at :code:`mike@lakeslegendaries.com` if you'd
+   like to provide feedback.
+
 ***
 API
 ***
@@ -55,6 +61,3 @@ Please note that this command expects:
    :code:`litai.eastus.cloudapp.azure.com`
 #. Ports 80 and 443 to be open
 #. The main user to be named :code:`mike`
-
-Additionally, if you want to enable the feedback mechanisms, place a file
-containing the list of valid tokens in :code:`~/secrets/litai-users`.

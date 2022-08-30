@@ -65,22 +65,6 @@ def feedback(
     table: Optional[str] = None,
     token: Optional[str] = None,
 ):
-    # make sure validated users file exists
-    users_fname = join(os.environ['SECRETS_DIR'], 'litai-users')
-    if not isfile(users_fname):
-        return {
-            'Status': 'Failed',
-            'Reason': 'Could not validate token. '
-                      f'File {users_fname} DNE',
-        }
-
-    # check if token is valid
-    validated_tokens = open(users_fname, 'r').read().splitlines()
-    if token not in validated_tokens:
-        return {
-            'Status': 'Failed',
-            'Reason': 'Invalid Token',
-        }
 
     # write feedback to file
     fname = datetime.now().isoformat()
