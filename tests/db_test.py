@@ -28,4 +28,4 @@ def test_append():
         ],
     ).append()
     count1 = SearchEngine(database='data/example.db').get_count()
-    assert(count1 > count0)
+    assert (count1 > count0)
