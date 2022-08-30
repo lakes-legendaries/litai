@@ -152,7 +152,7 @@ class DataBase:
             CREATE TABLE TEMP_{self._articles_table}
             AS SELECT * FROM {self._articles_table}
             WHERE _ROWID_ IN (
-                SELECT MIN(_ROWID_) FROM {self._articles_table}
+                SELECT MAX(_ROWID_) FROM {self._articles_table}
                 GROUP BY PMID
             )
         """)
