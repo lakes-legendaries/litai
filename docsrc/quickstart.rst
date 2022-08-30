@@ -37,15 +37,10 @@ You'll need to create a local mirror of PubMed as a SQLite database. This code
 is default-configured to grab every article published since 2010, and will take
 several hours to run.
 
-This operation is run in two parts: As a :code:`get-files` command, which
-downloads the file list from PubMed servers; and as a python command that
-creates the actual database by invoking the :class:`~litai.db.DataBase` class.
-
 To create your database, run:
 
 .. code-block:: bash
 
-   cmd/get-files
    python litai/db.py --create
 
 Results will be saved as :code:`data/pubmed.db`

@@ -7,7 +7,6 @@ from os.path import basename, isfile
 import re
 import sqlite3
 from subprocess import run
-from typing import Union
 
 from pandas import DataFrame
 from retry import retry
@@ -18,30 +17,51 @@ class DataBase:
 
     Parameters
     ----------
-    database: str, optional, default='data/pubmed.db'
-        SQL database
-    file_list: Union[str, list[str]], optional, default='data/file_list.txt'
-        List of pubmed baseline and daily update files. If str, interpret as a
-        file containing a list of the pubmed files; if list[str], interpret as
-        a the list of pubmed files
-    start_year: int, optional, default=2017
-        First year to mirror into database
     articles_table: str, optional, default='articles'
         Name of table in :code:`database`
+    database: str, optional, default='data/pubmed.db'
+        SQL database
+    file_list: list[str], optional, default=None
+        List of pubmed baseline and daily update files to use. If None, then
+        auto-generate the list by pulling all available files from PubMed.
+    start_year: int, optional, default=201
+        First year to mirror into database
     """
     def __init__(
         self,
         /,
         *,
-        database: str = 'data/pubmed.db',
-        file_list: Union[str, list[str]] = 'data/file_list.txt',
-        start_year: int = 2010,
         articles_table: str = 'articles',
+        database: str = 'data/pubmed.db',
+        file_list: list[str] = None,
+        start_year: int = 2010,
     ):
 
-        # load file list
-        if type(file_list) is str:
-            file_list = open(file_list, 'r').read().splitlines()
+        # generate filelist from pubmed
+        if file_list is None:
+            url = 'https://ftp.ncbi.nlm.nih.gov/pubmed'
+            file_list = []
+            for page in ['baseline', 'updatefiles']:
+                files = run(
+                    [
+                        'wget',
+                        '-O',
+                        '-',
+                        '-q',
+                        f'{url}/{page}',
+                    ],
+                    capture_output=True,
+                    check=True,
+                    text=True,
+                ).stdout.splitlines()
+                file_list.extend([
+                    f'{url}/{page}/{match[0]}'
+                    for file in files
+                    if (match := re.findall(
+                        r'.*>(pubmed[0-9]{2}n[0-9]{4}.xml.gz)<.*',
+                        file,
+                    ))
+                ])
 
         # save passed + cols
         self._database = database
