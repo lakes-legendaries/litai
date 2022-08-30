@@ -49,6 +49,7 @@ def search(
     return {
         n: {
             'PMID': article['PMID'],
+            'DOI': article['DOI'],
             'Title': article['Title'],
             'Abstract': article['Abstract'],
             'Date': article['Date'],

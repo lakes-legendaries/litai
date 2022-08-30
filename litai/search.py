@@ -83,6 +83,7 @@ class SearchEngine:
                     f'{self._articles_table}.{field}'
                     for field in [
                         'PMID',
+                        'DOI',
                         'Date',
                         'Title',
                         'Abstract',

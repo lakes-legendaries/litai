@@ -249,7 +249,7 @@ class DataBase:
         # initialize data dictionary and fields
         data = []
         in_pub_date = False
-        pmid = date = title = abstract = keywords = ''
+        pmid = date = title = abstract = keywords = doi = ''
 
         # run through file
         with open(xml_file, 'r') as file:
@@ -314,6 +314,10 @@ class DataBase:
                         keywords += ' '
                     keywords += match
 
+                # extract doi
+                elif match := regex(line, 'ArticleId', 'IdType="doi"'):
+                    doi = match
+
                 # end of article: save data
                 elif line == '</PubmedArticle>':
 
@@ -324,6 +328,7 @@ class DataBase:
                     if pmid and title and recent:
                         data.append([
                             pmid,
+                            doi,
                             date,
                             title,
                             abstract,
@@ -332,14 +337,20 @@ class DataBase:
 
                     # reset fields for next article
                     in_pub_date = False
-                    pmid = date = title = abstract = keywords = ''
+                    pmid = date = title = abstract = keywords = doi = ''
 
             # return as df
-            cols = ['PMID', 'Date', 'Title', 'Abstract', 'Keywords']
+            cols = ['PMID', 'DOI', 'Date', 'Title', 'Abstract', 'Keywords']
             return DataFrame(data, columns=cols)
 
     @classmethod
-    def _regex(cls, line: str, xml_field: str) -> str:
+    def _regex(
+        cls,
+        /,
+        line: str,
+        xml_field: str,
+        attribute: str = '',
+    ) -> str:
         """Extract xml_field from line
 
         Parameters
@@ -348,13 +359,16 @@ class DataBase:
             line to parse
         xml_field: str
             xml field to extract
+        attribute: str, optional, default=''
+            if provided, then only match xml fields with this attribute. Pass
+            the entire attribute, e.g. :code:`attribute='gender="female"'`.
 
         Returns
         -------
         str
             value of field, or :code:`''`, if field not found
         """
-        pattern = f'<{xml_field}[^>]*>(.*)</{xml_field}>'
+        pattern = f'<{xml_field}[^>]*{attribute}[^>]*>(.*)</{xml_field}>'
         match = re.findall(pattern, line)
         if len(match) == 0:
             return ''
