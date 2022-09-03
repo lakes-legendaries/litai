@@ -77,7 +77,8 @@ function show_results(request) {
         html += "<p class=\"p3\">";
         html += "PMID: " + json[field]["PMID"] + " &middot; ";
         html += "Score: " + json[field]["Score"].toPrecision(3) + " &middot; ";
-        html += "Date: " + json[field]["Date"];
+        html += "Date: " + json[field]["Date"] + " &middot; ";
+        html += "DOI: " + json[field]["DOI"];
         html += "</p>"
 
         // write abstract
