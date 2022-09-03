@@ -74,7 +74,9 @@ class DataBase:
 
         # remove existing database
         if isfile(self._database):
-            remove(self._database)
+            sqlite3.connect(self._database).execute(f"""
+                DROP TABLE IF EXISTS {self._articles_table}
+            """)
 
         # create database
         self._insert()
