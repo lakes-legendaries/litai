@@ -20,8 +20,9 @@ class ArticleScorer(SearchEngine):
 
     Parameters
     ----------
-    database: str, optional, default='data/pubmed.db'
-        SQL database
+    connection_str: str, optional, default='litai-mysql'
+        file containing connection string, in directory SECRETS_DIR (defined by
+        environmental variable)
     articles_table: str, optional, default='articles'
         Name of table in :code:`database`
     """
@@ -151,11 +152,14 @@ class ArticleScorer(SearchEngine):
         """Score all articles in table"""
 
         # create table
-        self._con.execute(f'DROP TABLE IF EXISTS TEMP_{self._scores_table}')
+        temp_table = f'TEMP_{self._scores_table}'
+        self._con.execute(f'DROP TABLE IF EXISTS {temp_table}')
         self._con.execute(f"""
-            CREATE TEMPORARY TABLE TEMP_{self._scores_table} (
-                PMID str,
-                Score FLOAT
+            CREATE TEMPORARY TABLE {temp_table} (
+                PMID VARCHAR(16) NOT NULL,
+                Score FLOAT NOT NULL,
+                PRIMARY KEY(PMID),
+                KEY(Score)
             )
         """)
 
@@ -175,7 +179,7 @@ class ArticleScorer(SearchEngine):
             ])
             if score_str:
                 self._con.execute(f"""
-                    INSERT INTO TEMP_{self._scores_table} (PMID, Score)
+                    INSERT INTO {temp_table} (PMID, Score)
                     VALUES {score_str}
                 """)
 
@@ -193,23 +197,9 @@ class ArticleScorer(SearchEngine):
         self._con.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
         self._con.execute(f"""
             CREATE {self._temp_str} TABLE {self._scores_table}
-            AS SELECT * FROM TEMP_{self._scores_table}
+            AS SELECT * FROM {temp_table}
         """)
-        self._con.execute(f'DROP TABLE TEMP_{self._scores_table}')
-
-        # create indices
-        for col in ['PMID', 'Score']:
-            self._con.execute(f"""
-                DROP INDEX IF EXISTS {self._scores_table}_{col}
-            """)
-            self._con.execute(f"""
-                CREATE INDEX {self._scores_table}_{col}
-                ON {self._scores_table}({col})
-            """)
-
-        # commit changes
-        if not self._temp_str:
-            self._con.commit()
+        self._con.execute(f'DROP TABLE {temp_table}')
 
 
 # command-line interface
