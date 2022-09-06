@@ -22,4 +22,4 @@ sudo docker system prune --force --all
 # build docker image, start api service
 cd /home/mike/litai
 sudo docker build -t litai .
-sudo docker run -dp 443:443 -v ~/secrets:/secrets -v $(pwd)/data:/code/data litai
+sudo docker run -dp 443:443 -v ~/secrets:/secrets litai

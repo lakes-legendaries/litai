@@ -5,7 +5,13 @@ set -e
 
 # setup unix
 sudo apt-get update
-sudo apt-get install -y ca-certificates curl git gnupg lsb-release
+sudo apt-get upgrade -y
+sudo apt-get dist-upgrade -y
+sudo apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
 
 # access docker repository
 KEYFILE=/usr/share/keyrings/docker-archive-keyring.gpg
@@ -19,9 +25,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=$KEYFILE] \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-# install azure cli
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
 # get ssl/tls certificates for secure https connection
 sudo apt-get install -y snapd
 sudo snap install core
@@ -34,22 +37,16 @@ sudo /usr/bin/certbot certonly \
     --agree-tos --email mike@lakeslegendaries.com
 
 # clone repo
-rm -rfd litai
+rm -rfd ~/litai
 git clone https://github.com/lakes-legendaries/litai.git
 
-# download database and pmid lists
-export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
-az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
-az storage blob download -f litai/data/senescence_pmids.txt -c data -n senescence_pmids.txt
-
-# schedule startup command, and plan monthly reboot
+# schedule restart and boot commands
 sudo rm -f /var/spool/cron/crontabs/$USER
 sudo rm -f /var/spool/cron/crontabs/root
-echo "@reboot /home/mike/litai/webserver/startup.sh" | sudo tee /var/spool/cron/crontabs/$USER
-echo "0 4 * * * /home/mike/litai/webserver/update.sh" | sudo tee -a /var/spool/cron/crontabs/$USER
+echo "@reboot /home/mike/litai/webserver/pro/startup.sh" | sudo tee /var/spool/cron/crontabs/$USER
 echo "0 0 1 * * reboot" | sudo tee /var/spool/cron/crontabs/root
 sudo chmod 0600 /var/spool/cron/crontabs/$USER
 sudo chmod 0600 /var/spool/cron/crontabs/root
 
 # run startup script
-/home/mike/litai/webserver/startup.sh
+/home/mike/litai/webserver/pro/startup.sh

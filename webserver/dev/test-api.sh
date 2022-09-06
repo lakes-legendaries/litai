@@ -10,7 +10,7 @@ if [ ! -z "$CONTAINERS" ]; then
 fi
 
 # create temporary dockerfile
-head -22 Dockerfile > Dockerfile.tmp
+head -16 Dockerfile > Dockerfile.tmp
 echo 'CMD [ "uvicorn", "litai.app:app", "--host", "0.0.0.0", "--port", "80" ]' >> Dockerfile.tmp
 
 # rebuild docker image
@@ -20,4 +20,4 @@ docker build -t litai . -f Dockerfile.tmp
 rm Dockerfile.tmp
 
 # start api service
-docker run -dp 80:80 -v ~/secrets:/secrets -v $(pwd)/data:/code/data litai
+docker run -dp 80:80 -v ~/secrets:/secrets litai
