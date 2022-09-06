@@ -5,17 +5,11 @@ WORKDIR /code
 
 # setup unix
 RUN apt-get update
-RUN apt-get install -y curl g++ gzip wget
+RUN apt-get install -y default-libmysqlclient-dev
 
 # setup python
-COPY requirements.txt .
 RUN python -m pip install --upgrade pip
-RUN python -m pip install -r requirements.txt
-RUN rm requirements.txt
-ENV PYTHONPATH .
-
-# setup azure cli
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN python -m pip install fastapi numpy pandas sqlalchemy uvicorn
 
 # setup app
 ENV SECRETS_DIR /secrets
