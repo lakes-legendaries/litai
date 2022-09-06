@@ -2,14 +2,15 @@
 
 from argparse import ArgumentParser
 from datetime import datetime
+import os
 from os import remove
-from os.path import basename, isfile
+from os.path import basename, isfile, join
 import re
-import sqlite3
 from subprocess import run
 
 from pandas import DataFrame
 from retry import retry
+from sqlalchemy import create_engine
 
 
 class DataBase:
@@ -17,13 +18,17 @@ class DataBase:
 
     Parameters
     ----------
-    articles_table: str, optional, default='articles'
+    articles_table: str, optional, default='ARTICLES'
         Name of table in :code:`database`
-    database: str, optional, default='data/pubmed.db'
-        SQL database
+    connection_str: str, optional, default='litai-mysql'
+        file containing connection string, in directory SECRETS_DIR (defined by
+        environmental variable)
     file_list: list[str], optional, default=None
         List of pubmed baseline and daily update files to use. If None, then
         auto-generate the list by pulling all available files from PubMed.
+    files_table: str, optional, default='FILES'
+        Name of table containing the names of the pubmed update xml files that
+        have already been added to this database
     start_year: int, optional, default=201
         First year to mirror into database
     """
@@ -32,8 +37,9 @@ class DataBase:
         /,
         *,
         articles_table: str = 'articles',
-        database: str = 'data/pubmed.db',
+        connection_str: str = 'litai-mysql',
         file_list: list[str] = None,
+        files_table: str = 'files',
         start_year: int = 2010,
     ):
 
@@ -64,19 +70,53 @@ class DataBase:
                 ])
 
         # save passed + cols
-        self._database = database
+        self._connection_str = open(
+            join(
+                os.environ['SECRETS_DIR'],
+                connection_str,
+            ),
+            'r',
+        ).read().strip()
         self._file_list = file_list
+        self._files_table = files_table
         self._start_year = start_year
         self._articles_table = articles_table
+
+        # connect to db
+        self._engine = create_engine(self._connection_str)
 
     def create(self, /):
         """Create database, deleting existing"""
 
-        # remove existing database
-        if isfile(self._database):
-            sqlite3.connect(self._database).execute(f"""
-                DROP TABLE IF EXISTS {self._articles_table}
-            """)
+        # (re)create articles table
+        self._engine.execute(f"""
+            DROP TABLE IF EXISTS {self._articles_table}
+        """)
+        self._engine.execute(f"""
+            CREATE TABLE {self._articles_table} (
+                _ROWID_ INT NOT NULL AUTO_INCREMENT,
+                PMID VARCHAR(16),
+                DOI VARCHAR(64),
+                Date DATE,
+                Title TEXT,
+                Abstract TEXT,
+                Keywords TEXT,
+                PRIMARY KEY(_ROWID_),
+                KEY(PMID),
+                KEY(DOI),
+                KEY(DATE)
+            )
+        """)
+
+        # re(create) files table
+        self._engine.execute(f"""
+            DROP TABLE IF EXISTS {self._files_table}
+        """)
+        self._engine.execute(f"""
+            CREATE TABLE {self._files_table} (
+                FILE VARCHAR(128)
+            )
+        """)
 
         # create database
         self._insert()
@@ -84,16 +124,11 @@ class DataBase:
     def append(self, /):
         """Append to existing database, create if DNE"""
 
-        # check that database exists
-        if not isfile(self._database):
-            self.create()
-            return
-
         # get files already in db
         already_in = [
             row[0]
-            for row in sqlite3.connect(self._database).execute("""
-                SELECT FILE from FILES
+            for row in self._engine.execute(f"""
+                SELECT FILE from {self._files_table}
             """).fetchall()
         ]
 
@@ -115,7 +150,7 @@ class DataBase:
 
         # process files
         total = len(self._file_list)
-        for n, server_file in enumerate(reversed(sorted(self._file_list))):
+        for n, server_file in enumerate(sorted(self._file_list)):
 
             # pull file from server
             local_file = self.__class__._get_file(server_file)
@@ -124,75 +159,47 @@ class DataBase:
             self._extract_data(local_file).to_sql(
                 name=self._articles_table,
                 chunksize=1000,
-                con=sqlite3.connect(self._database),
+                con=self._engine,
                 if_exists='append',
                 index=False,
             )
 
+            # insert file into files table
+            self._engine.execute(f"""
+                INSERT INTO {self._files_table}
+                VALUES ("{server_file}")
+            """)
+
             # write status
-            count = (
-                sqlite3.connect(self._database)
-                .execute(f"""
-                    SELECT MAX(_ROWID_) FROM {self._articles_table}
-                    LIMIT 1
-                """)
-                .fetchone()[0]
-            )
+            count = self._engine.execute(f"""
+                SELECT MAX(_ROWID_) FROM {self._articles_table}
+                LIMIT 1
+            """).fetchone()[0]
             print(f'{count} articles from {n+1} / {total} files', end='\r')
 
             # clean up
             remove(local_file)
 
-        # newline
+        # print newline
         print('')
 
-        # connect to db
-        engine = sqlite3.connect(self._database)
-
         # remove repeated entries
-        engine.execute(f"""
-            CREATE TABLE TEMP_{self._articles_table}
+        temp_table = f'TEMP_{self._articles_table}'
+        self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
+        self._engine.execute(f"""
+            CREATE TEMPORARY TABLE {temp_table}
             AS SELECT * FROM {self._articles_table}
             WHERE _ROWID_ IN (
                 SELECT MAX(_ROWID_) FROM {self._articles_table}
                 GROUP BY PMID
             )
         """)
-        engine.execute(f"""DROP TABLE {self._articles_table}""")
-        engine.execute(f"""
+        self._engine.execute(f"""DROP TABLE {self._articles_table}""")
+        self._engine.execute(f"""
             CREATE TABLE {self._articles_table}
-            AS SELECT * FROM TEMP_{self._articles_table}
+            AS SELECT * FROM {temp_table}
         """)
-        engine.execute(f"""DROP TABLE TEMP_{self._articles_table}""")
-
-        # save files used to make table
-        engine.execute("""
-            CREATE TABLE IF NOT EXISTS FILES (
-                FILE TEXT
-            )
-        """)
-        engine.execute(f"""
-            INSERT INTO FILES
-            VALUES {', '.join([
-                f'("{file}")'
-                for file in self._file_list
-            ])}
-        """)
-
-        # make indices
-        for col in ['PMID', 'Date', 'Title']:
-            engine.execute(f"""
-                DROP INDEX IF EXISTS {self._articles_table}_{col}
-            """)
-            engine.execute(f"""
-                CREATE INDEX {self._articles_table}_{col}
-                ON {self._articles_table}({col})
-            """)
-
-        # minimize db size
-        engine.commit()
-        engine.execute("""VACUUM""")
-        engine.commit()
+        self._engine.execute(f"""DROP TABLE {temp_table}""")
 
     @classmethod
     @retry(tries=60, delay=10)
