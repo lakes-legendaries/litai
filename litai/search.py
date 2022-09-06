@@ -1,9 +1,9 @@
 """Search Engine"""
-import sqlite3
 from typing import Iterator, Union
 
 from numpy import array
 from pandas import DataFrame, read_sql_query
+from sqlalchemy import create_engine
 
 
 class SearchEngine:
@@ -11,23 +11,24 @@ class SearchEngine:
 
     Parameters
     ----------
-    database: str, optional, default='data/pubmed.db'
-        SQL database
+    connection_str: str, optional, default='litai-mysql'
+        file containing connection string, in directory SECRETS_DIR (defined by
+        environmental variable)
     articles_table: str, optional, default='articles'
         Name of table in :code:`database`
     """
     def __init__(
         self,
         /,
-        database: str = 'data/pubmed.db',
+        connection_str: str = 'litai-mysql',
+        *,
         articles_table: str = 'articles',
     ):
         # save passed
         self._articles_table = articles_table
 
-        # connect to database
-        self._database = database
-        self._con = sqlite3.connect(database)
+        # connect to db
+        self._engine = create_engine(connection_str)
 
     def search(
         self,
