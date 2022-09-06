@@ -257,6 +257,7 @@ class DataBase:
             Extracted data, containing:
 
             #. PMID
+            #. DOI
             #. Date
             #. Title
             #. Abstract
