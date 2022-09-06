@@ -313,7 +313,7 @@ class DataBase:
                 # extract pmid
                 if len(pmid) == 0:
                     if match := regex(line, 'PMID'):
-                        pmid = match
+                        pmid = match[0: min(len(match), 16)]
 
                 # extract date
                 elif line == r'<PubDate>':
@@ -362,7 +362,7 @@ class DataBase:
 
                 # extract doi
                 elif match := regex(line, 'ArticleId', 'IdType="doi"'):
-                    doi = match
+                    doi = match[0: min(len(match), 64)]
 
                 # end of article: save data
                 elif line == '</PubmedArticle>':
