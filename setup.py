@@ -21,12 +21,14 @@ if __name__ == '__main__':
         # requirements
         install_requires=[
             'fastapi',
+            'mysqlclient',
             'nptyping',
             'numpy',
             'pandas',
             'pyyaml',
             'retry',
             'sklearn',
+            'sqlalchemy',
             'uvicorn',
             'vhash',
         ],
