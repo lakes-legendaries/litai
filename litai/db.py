@@ -14,7 +14,7 @@ from sqlalchemy import create_engine
 
 
 class DataBase:
-    """Mirror PubMed database to a local SQL database
+    """Mirror PubMed database to a mysql server database
 
     Parameters
     ----------
@@ -122,7 +122,7 @@ class DataBase:
         self._insert()
 
     def append(self, /):
-        """Append to existing database, create if DNE"""
+        """Append to existing database"""
 
         # get files already in db
         already_in = [
