@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from litai.search import SearchEngine
+from litai._version import __version__
 
 
 # create app
@@ -27,7 +28,7 @@ app.add_middleware(
 def home():
     return {
         "Package": "LitAI",
-        "Version": "0.1.35",
+        "Version": __version__,
         "Author": "Mike Powell PhD",
         "Email": "mike@lakeslegendaries.com",
     }
