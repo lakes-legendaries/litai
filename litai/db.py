@@ -88,6 +88,10 @@ class DataBase:
     def create(self, /):
         """Create database, deleting existing"""
 
+        # perform all operations on temporary table (to keep production active)
+        og_name = self._articles_table
+        self._articles_table += '_refresh'
+
         # (re)create articles table
         self._engine.execute(f"""
             DROP TABLE IF EXISTS {self._articles_table}
@@ -121,6 +125,18 @@ class DataBase:
         # create database
         self._insert()
 
+        # transfer to target table
+        self._engine.execute(f"""
+            DROP TABLE IF EXISTS {og_name}
+        """)
+        self._engine.execute(f"""
+            CREATE TABLE {og_name}
+            AS SELECT * FROM {self._articles_table}
+        """)
+        self._engine.execute(f"""
+            DROP TABLE {self._articles_table}
+        """)
+
     def append(self, /):
         """Append to existing database"""
 
@@ -150,7 +166,7 @@ class DataBase:
 
         # process files
         total = len(self._file_list)
-        for n, server_file in enumerate(sorted(self._file_list)):
+        for n, server_file in enumerate(sorted(self._file_list)[-3:]):
 
             # pull file from server
             local_file = self.__class__._get_file(server_file)
