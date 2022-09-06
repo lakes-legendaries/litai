@@ -1,5 +1,7 @@
 from setuptools import find_packages, setup
 
+from litai._version import __version__
+
 
 # setup script
 if __name__ == '__main__':
@@ -9,7 +11,7 @@ if __name__ == '__main__':
 
         # standard info
         name='litai',
-        version='0.1.35',
+        version=__version__,
         description='ai-powered literature search',
         author='Mike Powell PhD',
         author_email='mike@lakeslegendaries.com',

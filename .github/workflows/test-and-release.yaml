@@ -34,9 +34,9 @@ jobs:
         pytest
     - name: Increment version, tag branch
       run: |
-        OLD_VERSION=$(grep version setup.py | grep -Po "\d+.\d+.\d+")
+        OLD_VERSION=$(grep version litai/_version.py | grep -Po "\d+.\d+.\d+")
         NEW_VERSION=$(echo $OLD_VERSION | perl -pe 's/^((\d+\.)*)(\d+)(.*)$/$1.($3+1).$4/e')
-        for file in setup.py docsrc/conf.py litai/app.py; do
+        for file in litai/_version.py; do
             sed s/$OLD_VERSION/$NEW_VERSION/g $file -i
             git add $file
         done
@@ -51,7 +51,7 @@ jobs:
         git push origin actions:main -f
     - name: Push tag
       run: |
-        VERSION=$(grep version setup.py | grep -Po "\d+.\d+.\d+")
+        VERSION=$(grep version litai/_version.py | grep -Po "\d+.\d+.\d+")
         git ls-remote --tags | grep -w refs/tags/$VERSION && git push --delete origin $VERSION
         git push origin $VERSION
     - name: Push to actions
