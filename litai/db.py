@@ -95,7 +95,7 @@ class DataBase:
         self._engine.execute(f"""
             CREATE TABLE {self._articles_table} (
                 _ROWID_ INT NOT NULL AUTO_INCREMENT,
-                PMID VARCHAR(16),
+                PMID VARCHAR(16) NOT NULL,
                 DOI VARCHAR(64),
                 Date DATE,
                 Title TEXT,
@@ -104,7 +104,7 @@ class DataBase:
                 PRIMARY KEY(_ROWID_),
                 KEY(PMID),
                 KEY(DOI),
-                KEY(DATE)
+                KEY(Date)
             )
         """)
 
