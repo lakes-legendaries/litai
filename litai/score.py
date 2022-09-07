@@ -156,9 +156,11 @@ class ArticleScorer(SearchEngine):
         self._con.execute(f'DROP TABLE IF EXISTS {temp_table}')
         self._con.execute(f"""
             CREATE TEMPORARY TABLE {temp_table} (
-                PMID VARCHAR(16) NOT NULL,
+                _ROWID_ INT NOT NULL AUTO_INCREMENT,
+                PMID INT NOT NULL,
                 Score FLOAT NOT NULL,
-                PRIMARY KEY(PMID),
+                PRIMARY KEY(_ROWID_),
+                KEY(PMID),
                 KEY(Score)
             )
         """)
