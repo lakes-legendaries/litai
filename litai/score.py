@@ -20,11 +20,11 @@ class ArticleScorer(SearchEngine):
 
     Parameters
     ----------
+    articles_table: str, optional, default='articles'
+        Name of table in :code:`database`
     connection_str: str, optional, default='litai-mysql'
         file containing connection string, in directory SECRETS_DIR (defined by
         environmental variable)
-    articles_table: str, optional, default='articles'
-        Name of table in :code:`database`
     """
 
     def score(

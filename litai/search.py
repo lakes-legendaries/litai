@@ -15,18 +15,18 @@ class SearchEngine:
 
     Parameters
     ----------
+    articles_table: str, optional, default='articles'
+        Name of table in :code:`database`
     connection_str: str, optional, default='litai-mysql'
         file containing connection string, in directory SECRETS_DIR (defined by
         environmental variable)
-    articles_table: str, optional, default='articles'
-        Name of table in :code:`database`
     """
     def __init__(
         self,
         /,
-        connection_str: str = 'litai-mysql',
-        *,
         articles_table: str = 'articles',
+        *,
+        connection_str: str = 'litai-mysql',
     ):
         # save passed
         self._articles_table = articles_table
