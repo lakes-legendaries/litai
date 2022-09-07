@@ -121,10 +121,13 @@ class ArticleScorer(SearchEngine):
         ]
 
         # pull random articles
-        rand_df = self.get_rand(int(
-            self._rand_factor
-            * (pn_dfs[0].shape[0] + pn_dfs[1].shape[0])
-        ))
+        if self._rand_factor:
+            rand_df = self.get_rand(int(
+                self._rand_factor
+                * (pn_dfs[0].shape[0] + pn_dfs[1].shape[0])
+            ))
+        else:
+            rand_df = DataFrame([], columns=pn_dfs[0].columns)
 
         # make labels
         pos_labels = [2] * pn_dfs[0].shape[0]
@@ -152,10 +155,10 @@ class ArticleScorer(SearchEngine):
         """Score all articles in table"""
 
         # create table
-        temp_table = f'TEMP_{self._scores_table}'
-        self._con.execute(f'DROP TABLE IF EXISTS {temp_table}')
-        self._con.execute(f"""
-            CREATE TEMPORARY TABLE {temp_table} (
+        temp_table = f'{self._scores_table}_temp'
+        self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
+        self._engine.execute(f"""
+            CREATE TABLE {temp_table} (
                 _ROWID_ INT NOT NULL AUTO_INCREMENT,
                 PMID INT NOT NULL,
                 Score FLOAT NOT NULL,
@@ -180,7 +183,7 @@ class ArticleScorer(SearchEngine):
                 if self._min_score is None or score >= self._min_score
             ])
             if score_str:
-                self._con.execute(f"""
+                self._engine.execute(f"""
                     INSERT INTO {temp_table} (PMID, Score)
                     VALUES {score_str}
                 """)
@@ -196,12 +199,12 @@ class ArticleScorer(SearchEngine):
         print('')
 
         # move from temp table to std table
-        self._con.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
-        self._con.execute(f"""
+        self._engine.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
+        self._engine.execute(f"""
             CREATE {self._temp_str} TABLE {self._scores_table}
             AS SELECT * FROM {temp_table}
         """)
-        self._con.execute(f'DROP TABLE {temp_table}')
+        self._engine.execute(f'DROP TABLE {temp_table}')
 
 
 # command-line interface

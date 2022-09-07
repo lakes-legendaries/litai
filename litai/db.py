@@ -185,7 +185,7 @@ class DataBase:
         self._preshrink_count = self._engine.execute(
             f'SELECT COUNT(PMID) FROM {self._articles_table}'
         ).fetchall()[0]
-        temp_table = f'TEMP_{self._articles_table}'
+        temp_table = f'{self._articles_table}_temp'
         self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
         self._engine.execute(f"""
             CREATE TEMPORARY TABLE {temp_table}
