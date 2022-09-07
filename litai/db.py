@@ -100,6 +100,7 @@ class DataBase:
         self._title_len = 256
         self._abstract_len = 2048
         self._keywords_len = 256
+        self._file_len = 128
         self._engine.execute(f'DROP TABLE IF EXISTS {self._articles_table}')
         self._engine.execute(f"""
             CREATE TABLE {self._articles_table} (
@@ -110,17 +111,19 @@ class DataBase:
                 Title VARCHAR({self._title_len}) NOT NULL,
                 Abstract VARCHAR({self._abstract_len}),
                 Keywords VARCHAR({self._keywords_len}),
+                File VARCHAR({self._file_len}) NOT NULL,
                 PRIMARY KEY(_ROWID_),
                 KEY(PMID),
                 KEY(DOI),
-                KEY(Date)
+                KEY(Date),
+                KEY(File)
             )
         """)
 
         # re(create) files table
         self._engine.execute(f'DROP TABLE IF EXISTS {self._files_table}')
         self._engine.execute(f"""
-            CREATE TABLE {self._files_table} (FILE VARCHAR(128))
+            CREATE TABLE {self._files_table} (FILE VARCHAR({self._file_len}))
         """)
 
         # create database
@@ -159,7 +162,7 @@ class DataBase:
 
         # process files
         total = len(self._file_list)
-        for n, server_file in enumerate(sorted(self._file_list)):
+        for n, server_file in enumerate(sorted(self._file_list)[-3:]):
 
             # pull file from server
             local_file = self.__class__._get_file(server_file)
@@ -193,14 +196,14 @@ class DataBase:
         print('')
 
     def _shrink(self, /):
-        """Remove repeated entries from articles table"""
+        """Remove entries with repeated PMID from articles table"""
         temp_table = f'TEMP_{self._articles_table}'
         self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
         self._engine.execute(f"""
             CREATE TEMPORARY TABLE {temp_table}
             AS SELECT * FROM {self._articles_table}
-            WHERE _ROWID_ IN (
-                SELECT MAX(_ROWID_) FROM {self._articles_table}
+            WHERE (PMID, File) IN (
+                SELECT PMID, MAX(File) FROM {self._articles_table}
                 GROUP BY PMID
             )
         """)
@@ -384,6 +387,7 @@ class DataBase:
                             title,
                             abstract,
                             keywords,
+                            xml_file,
                         ])
 
                     # reset fields for next article
@@ -391,7 +395,15 @@ class DataBase:
                     pmid = date = title = abstract = keywords = doi = ''
 
             # return as df
-            cols = ['PMID', 'DOI', 'Date', 'Title', 'Abstract', 'Keywords']
+            cols = [
+                'PMID',
+                'DOI',
+                'Date',
+                'Title',
+                'Abstract',
+                'Keywords',
+                'File',
+            ]
             return DataFrame(data, columns=cols)
 
     @classmethod
