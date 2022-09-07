@@ -30,7 +30,7 @@ class ArticleScorer(SearchEngine):
     def score(
         self,
         /,
-        scores_table: str = None,
+        scores_table: str,
         pos_pmids: Union[str, list[Union[str, int]]] = None,
         neg_pmids: Union[str, list[Union[str, int]]] = None,
         pos_keywords: Union[list[str], str] = None,
@@ -46,9 +46,8 @@ class ArticleScorer(SearchEngine):
 
         Parameters
         ----------
-        scores_table: str, optional, default=None
-            table to save scores into. If None, then a temporary table will be
-            used.
+        scores_table: str
+            table to save scores into
         pos_pmids: str or list[Union[str, int]], optional, default=None
             Target articles: Similiar articles will be scored highly. If str,
             treat as a filename
@@ -87,11 +86,8 @@ class ArticleScorer(SearchEngine):
         self._keyword_limit = keyword_limit
         self._min_score = min_score
         self._rand_factor = rand_factor
+        self._scores_table = scores_table
         self._verbose = verbose
-
-        # determine whether we're saving scores or using a temporary table
-        self._temp_str = 'TEMPORARY' if not scores_table else ''
-        self._scores_table = scores_table if scores_table else 'SCORES_TABLE'
 
         # execute jobs
         self._fit_model()
@@ -201,7 +197,7 @@ class ArticleScorer(SearchEngine):
         # move from temp table to std table
         self._engine.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
         self._engine.execute(f"""
-            CREATE {self._temp_str} TABLE {self._scores_table}
+            CREATE TABLE {self._scores_table}
             AS SELECT * FROM {temp_table}
         """)
         self._engine.execute(f'DROP TABLE {temp_table}')
