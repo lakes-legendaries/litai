@@ -170,7 +170,7 @@ class SearchEngine:
                 (
                     PMID in ({
                         ", ".join([
-                            f'"{pmid}"'
+                            f'{pmid}'
                             for pmid in pmids
                         ])
                     })
@@ -211,7 +211,7 @@ class SearchEngine:
             """
 
         # return matching articles
-        return read_sql_query(query, con=self._engine)
+        return read_sql_query(query.replace(r'%', r'%%'), con=self._engine)
 
     def get_rand(self, /, count: int) -> DataFrame:
         """Find random articles
@@ -226,9 +226,10 @@ class SearchEngine:
         DataFrame
             Articles
         """
-        ids = self._engine.execute(
-            f'SELECT PMID FROM {self._articles_table}'
-        ).fetchall()
+        ids = read_sql_query(
+            f'SELECT PMID FROM {self._articles_table}',
+            con=self._engine,
+        )['PMID'].to_numpy()
         pmids = choices(ids, k=count)
         return read_sql_query(
             f"""
@@ -240,12 +241,12 @@ class SearchEngine:
                 Abstract,
                 Keywords
             FROM {self._articles_table}
-            WHERE PMID IN {
+            WHERE PMID IN ({
                 ", ".join([
-                    f'"{pmid}"'
+                    f'{pmid}'
                     for pmid in pmids
                 ])
-            }
+            })
             """,
             con=self._engine,
         )
