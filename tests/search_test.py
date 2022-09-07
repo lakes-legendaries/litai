@@ -2,17 +2,19 @@ from litai import SearchEngine
 
 
 def test_getters():
-    engine = SearchEngine(database='data/example.db')
+    engine = SearchEngine('pytest')
     count = engine.get_count()
     articles = next(engine.get_all(chunksize=int(1E6)))
     random = engine.get_rand(100)
+    random2 = engine.get_rand(100)
     assert (count == articles.shape[0])
     assert (random.shape[0] == 100)
+    assert (random['PMID'][0] != random2['PMID'][1])
 
 
 def test_keyword_search():
     keyword = 'mouse'
-    engine = SearchEngine(database='data/example.db')
+    engine = SearchEngine('pytest')
     df = engine.search(
         keywords=keyword,
     )
@@ -26,7 +28,7 @@ def test_keyword_search():
 
 def test_keyword_and_join():
     keywords = ['mouse', 'lifespan']
-    engine = SearchEngine(database='data/example.db')
+    engine = SearchEngine('pytest')
     df = engine.search(
         keywords=keywords,
         join='AND',
@@ -46,7 +48,7 @@ def test_keyword_and_join():
 
 def test_keyword_or_join():
     keywords = ['mouse', 'lifespan']
-    engine = SearchEngine(database='data/example.db')
+    engine = SearchEngine('pytest')
     df = engine.search(
         keywords=keywords,
         join='OR',
@@ -76,14 +78,14 @@ def test_keyword_or_join():
 
 def test_pmid_search():
     pmids = [33999167, '33337786']
-    engine = SearchEngine(database='data/example.db')
+    engine = SearchEngine('pytest')
     df = engine.search(
         pmids=pmids,
         require_abstract=False,
     )
     assert (df.shape[0] == 2)
     assert (len(
-        set([str(pmid) for pmid in pmids])
+        set([int(pmid) for pmid in pmids])
         .intersection(set(df['PMID'].to_numpy()))
     ) == 2)
 
@@ -91,11 +93,17 @@ def test_pmid_search():
 def test_date_search():
     min_date = '2020-07-01'
     max_date = '2020-12-31'
-    engine = SearchEngine(database='data/example.db')
-    assert ((engine.search(min_date=min_date)['Date'] >= min_date).all())
-    assert ((engine.search(max_date=max_date)['Date'] <= max_date).all())
+    engine = SearchEngine('pytest')
+    assert ((
+        engine.search(min_date=min_date)['Date'].to_numpy(str)
+        >= min_date
+    ).all())
+    assert ((
+        engine.search(max_date=max_date)['Date'].to_numpy(str)
+        <= max_date
+    ).all())
     assert (all([
-        min_date <= date <= max_date
+        min_date <= str(date) <= max_date
         for date in engine.search(
             max_date=max_date,
             min_date=min_date,

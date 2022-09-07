@@ -1,31 +1,44 @@
-from os import remove
-
 from pytest import fixture
 
 from litai import DataBase, SearchEngine
 
 
-# create example database
-@fixture(scope="session", autouse=True)
-def make_db(request):
+@fixture(scope='session')
+def test_db():
+
+    # make db from scratch
     DataBase(
-        database='data/example.db',
+        'pytest',
         file_list=[
             'https://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/'
             'pubmed22n1120.xml.gz'
         ],
     ).create()
-    request.addfinalizer(lambda: remove('data/example.db'))
 
+    # append to db
+    count0 = SearchEngine('pytest').get_count()
+    db = DataBase(
+        'pytest',
+        file_list=[
+            'https://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/'
+            'pubmed22n1121.xml.gz'
+        ],
+    )
+    db.append()
+    count1 = SearchEngine('pytest').get_count()
+    assert (count1 > count0)
 
-def test_append():
-    count0 = SearchEngine(database='data/example.db').get_count()
+    # check shrinking
+    assert (db._preshrink_count > db._postshrink_count)
+
+    # try to re-append same
+    count0 = SearchEngine('pytest').get_count()
     DataBase(
-        database='data/example.db',
+        'pytest',
         file_list=[
             'https://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/'
             'pubmed22n1121.xml.gz'
         ],
     ).append()
-    count1 = SearchEngine(database='data/example.db').get_count()
-    assert (count1 > count0)
+    count1 = SearchEngine('pytest').get_count()
+    assert (count1 == count0)

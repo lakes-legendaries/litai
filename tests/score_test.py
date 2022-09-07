@@ -7,7 +7,7 @@ from litai import ArticleScorer
 def test_scoring():
     @retry(tries=10)
     def score_fun():
-        scorer = ArticleScorer(database='data/example.db')
+        scorer = ArticleScorer('pytest')
         scorer.score(
             scores_table='mouse',
             pos_keywords='mouse',
