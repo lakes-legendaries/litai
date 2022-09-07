@@ -275,7 +275,7 @@ class SearchEngine:
                 FROM {self._articles_table}
             """,
             chunksize=chunksize,
-            con=self._con,
+            con=self._engine,
         )
 
     def get_count(self) -> int:
@@ -287,4 +287,4 @@ class SearchEngine:
             total number of articles
         """
         query = f'SELECT COUNT(PMID) FROM {self._articles_table}'
-        return self._con.execute(query).fetchone()[0]
+        return self._engine.execute(query).fetchone()[0]
