@@ -2,7 +2,6 @@
 
 from argparse import ArgumentParser
 from datetime import datetime
-from multiprocessing import Pool
 import os
 from os import remove
 from os.path import basename, isfile, join
