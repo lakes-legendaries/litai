@@ -20,12 +20,12 @@ class DataBase:
     ----------
     articles_table: str, optional, default='ARTICLES'
         Name of table in :code:`database`
-    connection_str: str, optional, default='litai-mysql'
-        file containing connection string, in directory SECRETS_DIR (defined by
-        environmental variable)
     file_list: list[str], optional, default=None
         List of pubmed baseline and daily update files to use. If None, then
         auto-generate the list by pulling all available files from PubMed.
+    connection_str: str, optional, default='litai-mysql'
+        file containing connection string, in directory SECRETS_DIR (defined by
+        environmental variable)
     files_table: str, optional, default='FILES'
         Name of table containing the names of the pubmed update xml files that
         have already been added to this database
@@ -35,10 +35,10 @@ class DataBase:
     def __init__(
         self,
         /,
-        *,
         articles_table: str = 'articles',
-        connection_str: str = 'litai-mysql',
         file_list: list[str] = None,
+        *,
+        connection_str: str = 'litai-mysql',
         files_table: str = 'files',
         start_year: int = 2010,
     ):
