@@ -5,17 +5,21 @@ from litai import ArticleScorer
 
 
 def test_scoring():
-    @retry(tries=10)
+    @retry(tries=1)
     def score_fun():
         scorer = ArticleScorer('pytest')
         scorer.score(
-            scores_table='mouse',
+            scores_table='pytest_scores',
             pos_keywords='mouse',
             neg_keywords='fish',
             min_score=None,
             rand_factor=0,
         )
-        df = scorer.search(scores_table='mouse', min_score=1, limit=1000)
+        df = scorer.search(
+            scores_table='pytest_scores',
+            min_score=1,
+            limit=1000,
+        )
         term_freq = [
             array([
                 df[field].str.contains(term).to_numpy()
