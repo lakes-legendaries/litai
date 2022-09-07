@@ -2,6 +2,7 @@
 
 from argparse import ArgumentParser
 from datetime import datetime
+from multiprocessing import Pool
 import os
 from os import remove
 from os.path import basename, isfile, join
@@ -88,23 +89,27 @@ class DataBase:
     def create(self, /):
         """Create database, deleting existing"""
 
-        # perform all operations on temporary table (to keep production active)
-        og_name = self._articles_table
+        # perform all operations on temporary tables (to keep production up)
+        final_articles_table = self._articles_table
+        final_files_table = self._files_table
         self._articles_table += '_refresh'
+        self._files_table += '_refresh'
 
-        # (re)create articles table
-        self._engine.execute(f"""
-            DROP TABLE IF EXISTS {self._articles_table}
-        """)
+        # create articles table
+        self._doi_len = 64
+        self._title_len = 256
+        self._abstract_len = 2048
+        self._keywords_len = 256
+        self._engine.execute(f'DROP TABLE IF EXISTS {self._articles_table}')
         self._engine.execute(f"""
             CREATE TABLE {self._articles_table} (
                 _ROWID_ INT NOT NULL AUTO_INCREMENT,
-                PMID VARCHAR(16) NOT NULL,
-                DOI VARCHAR(64),
-                Date DATE,
-                Title TEXT,
-                Abstract TEXT,
-                Keywords TEXT,
+                PMID INT NOT NULL,
+                DOI VARCHAR({self._doi_len}),
+                Date DATE NOT NULL,
+                Title VARCHAR({self._title_len}) NOT NULL,
+                Abstract VARCHAR({self._abstract_len}),
+                Keywords VARCHAR({self._keywords_len}),
                 PRIMARY KEY(_ROWID_),
                 KEY(PMID),
                 KEY(DOI),
@@ -113,29 +118,16 @@ class DataBase:
         """)
 
         # re(create) files table
+        self._engine.execute(f'DROP TABLE IF EXISTS {self._files_table}')
         self._engine.execute(f"""
-            DROP TABLE IF EXISTS {self._files_table}
-        """)
-        self._engine.execute(f"""
-            CREATE TABLE {self._files_table} (
-                FILE VARCHAR(128)
-            )
+            CREATE TABLE {self._files_table} (FILE VARCHAR(128))
         """)
 
         # create database
         self._insert()
-
-        # transfer to target table
-        self._engine.execute(f"""
-            DROP TABLE IF EXISTS {og_name}
-        """)
-        self._engine.execute(f"""
-            CREATE TABLE {og_name}
-            AS SELECT * FROM {self._articles_table}
-        """)
-        self._engine.execute(f"""
-            DROP TABLE {self._articles_table}
-        """)
+        self._shrink()
+        self._rename(self._articles_table, final_articles_table)
+        self._rename(self._files_table, final_files_table)
 
     def append(self, /):
         """Append to existing database"""
@@ -160,13 +152,14 @@ class DataBase:
 
         # append to database
         self._insert()
+        self._shrink()
 
     def _insert(self, /):
         """Insert articles into table"""
 
         # process files
         total = len(self._file_list)
-        for n, server_file in enumerate(sorted(self._file_list)):
+        for n, server_file in enumerate(sorted(self._file_list)[-3:]):
 
             # pull file from server
             local_file = self.__class__._get_file(server_file)
@@ -199,7 +192,8 @@ class DataBase:
         # print newline
         print('')
 
-        # remove repeated entries
+    def _shrink(self, /):
+        """Remove repeated entries from articles table"""
         temp_table = f'TEMP_{self._articles_table}'
         self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
         self._engine.execute(f"""
@@ -210,12 +204,21 @@ class DataBase:
                 GROUP BY PMID
             )
         """)
-        self._engine.execute(f"""DROP TABLE {self._articles_table}""")
-        self._engine.execute(f"""
-            CREATE TABLE {self._articles_table}
-            AS SELECT * FROM {temp_table}
-        """)
-        self._engine.execute(f"""DROP TABLE {temp_table}""")
+        self._rename(temp_table, self._articles_table)
+
+    def _rename(self, source: str, dest: str, /):
+        """Rename table
+
+        Parameters
+        ----------
+        source: str
+            source table
+        dest: str
+            destination table
+        """
+        self._engine.execute(f'DROP TABLE IF EXISTS {dest}')
+        self._engine.execute(f'CREATE TABLE {dest} AS SELECT * FROM {source}')
+        self._engine.execute(f'DROP TABLE {source}')
 
     @classmethod
     @retry(tries=60, delay=10)
@@ -313,7 +316,7 @@ class DataBase:
                 # extract pmid
                 if len(pmid) == 0:
                     if match := regex(line, 'PMID'):
-                        pmid = match[0: min(len(match), 16)]
+                        pmid = match
 
                 # extract date
                 elif line == r'<PubDate>':
@@ -348,21 +351,23 @@ class DataBase:
 
                 # extract title
                 elif match := regex(line, 'ArticleTitle'):
-                    title = match
+                    title = match[0:min(len(match), self._title_len)]
 
                 # extract abstract
                 elif match := regex(line, 'AbstractText'):
-                    abstract = match
+                    abstract = match[0:min(len(match), self._abstract_len)]
 
                 # extract keywords
                 elif match := regex(line, 'Keyword'):
                     if len(keywords):
                         keywords += ' '
                     keywords += match
+                    if len(keywords) > self._keywords_len:
+                        keywords = keywords[0:self._keywords_len]
 
                 # extract doi
                 elif match := regex(line, 'ArticleId', 'IdType="doi"'):
-                    doi = match[0: min(len(match), 64)]
+                    doi = match[0: min(len(match), self._doi_len)]
 
                 # end of article: save data
                 elif line == '</PubmedArticle>':
