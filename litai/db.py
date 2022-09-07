@@ -18,7 +18,7 @@ class DataBase:
 
     Parameters
     ----------
-    articles_table: str, optional, default='ARTICLES'
+    articles_table: str, optional, default='articles'
         Name of table in :code:`database`
     file_list: list[str], optional, default=None
         List of pubmed baseline and daily update files to use. If None, then
@@ -26,9 +26,6 @@ class DataBase:
     connection_str: str, optional, default='litai-mysql'
         file containing connection string, in directory SECRETS_DIR (defined by
         environmental variable)
-    files_table: str, optional, default='FILES'
-        Name of table containing the names of the pubmed update xml files that
-        have already been added to this database
     start_year: int, optional, default=201
         First year to mirror into database
     """
@@ -39,7 +36,6 @@ class DataBase:
         file_list: list[str] = None,
         *,
         connection_str: str = 'litai-mysql',
-        files_table: str = 'files',
         start_year: int = 2010,
     ):
 
@@ -78,28 +74,27 @@ class DataBase:
             'r',
         ).read().strip()
         self._file_list = file_list
-        self._files_table = files_table
         self._start_year = start_year
         self._articles_table = articles_table
 
         # connect to db
         self._engine = create_engine(self._connection_str)
 
-    def create(self, /):
-        """Create database, deleting existing"""
-
-        # perform all operations on temporary tables (to keep production up)
-        final_articles_table = self._articles_table
-        final_files_table = self._files_table
-        self._articles_table += '_refresh'
-        self._files_table += '_refresh'
-
-        # create articles table
+        # hard-coded column lengths
         self._doi_len = 64
         self._title_len = 256
         self._abstract_len = 2048
         self._keywords_len = 256
         self._file_len = 128
+
+    def create(self, /):
+        """Create database, deleting existing"""
+
+        # perform all operations on temporary tables (to keep production up)
+        final_articles_table = self._articles_table
+        self._articles_table += '_refresh'
+
+        # create articles table
         self._engine.execute(f'DROP TABLE IF EXISTS {self._articles_table}')
         self._engine.execute(f"""
             CREATE TABLE {self._articles_table} (
@@ -119,17 +114,10 @@ class DataBase:
             )
         """)
 
-        # re(create) files table
-        self._engine.execute(f'DROP TABLE IF EXISTS {self._files_table}')
-        self._engine.execute(f"""
-            CREATE TABLE {self._files_table} (FILE VARCHAR({self._file_len}))
-        """)
-
         # create database
         self._insert()
         self._shrink()
         self._rename(self._articles_table, final_articles_table)
-        self._rename(self._files_table, final_files_table)
 
     def append(self, /):
         """Append to existing database"""
@@ -138,14 +126,18 @@ class DataBase:
         already_in = [
             row[0]
             for row in self._engine.execute(f"""
-                SELECT FILE from {self._files_table}
+                SELECT DISTINCT(FILE) from {self._articles_table}
             """).fetchall()
         ]
 
         # get files to be added
         self._file_list = [
             file
-            for file in set(self._file_list).difference(set(already_in))
+            for file in self._file_list
+            if not any([
+                existing in file
+                for existing in already_in
+            ])
         ]
 
         # stop, if no files to be added
@@ -175,12 +167,6 @@ class DataBase:
                 index=False,
             )
 
-            # insert file into files table
-            self._engine.execute(f"""
-                INSERT INTO {self._files_table}
-                VALUES ("{server_file}")
-            """)
-
             # write status
             count = self._engine.execute(f"""
                 SELECT MAX(_ROWID_) FROM {self._articles_table}
@@ -196,6 +182,9 @@ class DataBase:
 
     def _shrink(self, /):
         """Remove entries with repeated PMID from articles table"""
+        self._preshrink_count = self._engine.execute(
+            f'SELECT COUNT(PMID) FROM {self._articles_table}'
+        ).fetchall()[0]
         temp_table = f'TEMP_{self._articles_table}'
         self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
         self._engine.execute(f"""
@@ -207,6 +196,9 @@ class DataBase:
             )
         """)
         self._rename(temp_table, self._articles_table)
+        self._postshrink_count = self._engine.execute(
+            f'SELECT COUNT(PMID) FROM {self._articles_table}'
+        ).fetchall()[0]
 
     def _rename(self, source: str, dest: str, /):
         """Rename table
