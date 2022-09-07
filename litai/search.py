@@ -1,4 +1,8 @@
 """Search Engine"""
+
+import os
+from os.path import join
+from random import choices
 from typing import Iterator, Union
 
 from numpy import array
@@ -27,8 +31,17 @@ class SearchEngine:
         # save passed
         self._articles_table = articles_table
 
+        # load connection string
+        self._connection_str = open(
+            join(
+                os.environ['SECRETS_DIR'],
+                connection_str,
+            ),
+            'r',
+        ).read().strip()
+
         # connect to db
-        self._engine = create_engine(connection_str)
+        self._engine = create_engine(self._connection_str)
 
     def search(
         self,
@@ -188,7 +201,7 @@ class SearchEngine:
             """
         else:
             query += """
-                ORDER BY RANDOM()
+                ORDER BY _ROWID_ DESC
             """
 
         # limit results
@@ -198,7 +211,7 @@ class SearchEngine:
             """
 
         # return matching articles
-        return read_sql_query(query, con=self._con)
+        return read_sql_query(query, con=self._engine)
 
     def get_rand(self, /, count: int) -> DataFrame:
         """Find random articles
@@ -213,13 +226,28 @@ class SearchEngine:
         DataFrame
             Articles
         """
+        ids = self._engine.execute(
+            f'SELECT PMID FROM {self._articles_table}'
+        ).fetchall()
+        pmids = choices(ids, k=count)
         return read_sql_query(
             f"""
-            SELECT * FROM {self._articles_table}
-            ORDER BY RANDOM()
-            LIMIT {count}
+            SELECT
+                PMID,
+                DOI,
+                Date,
+                Title,
+                Abstract,
+                Keywords
+            FROM {self._articles_table}
+            WHERE PMID IN {
+                ", ".join([
+                    f'"{pmid}"'
+                    for pmid in pmids
+                ])
+            }
             """,
-            con=self._con,
+            con=self._engine,
         )
 
     def get_all(self, /, chunksize: int = 10000) -> Iterator[DataFrame]:
@@ -236,7 +264,16 @@ class SearchEngine:
             Iterator to all articles in database
         """
         return read_sql_query(
-            f'SELECT * FROM {self._articles_table}',
+            f"""
+                SELECT
+                    PMID,
+                    DOI,
+                    Date,
+                    Title,
+                    Abstract,
+                    Keywords
+                FROM {self._articles_table}
+            """,
             chunksize=chunksize,
             con=self._con,
         )
