@@ -177,7 +177,7 @@ class DataBase:
                 SELECT MAX(_ROWID_) FROM {self._articles_table}
                 LIMIT 1
             """).fetchone()[0]
-            print(f'{count} articles from {n+1} / {total} files', end='\r')
+            print(f'{count:,} articles from {n+1} / {total} files', end='\r')
 
             # clean up
             remove(local_file)
