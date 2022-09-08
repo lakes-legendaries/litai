@@ -5,7 +5,7 @@ from litai import ArticleScorer
 
 
 def test_scoring():
-    @retry(tries=1)
+    @retry(tries=3)
     def score_fun():
         scorer = ArticleScorer('pytest')
         scorer.score(
