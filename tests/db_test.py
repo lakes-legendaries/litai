@@ -3,7 +3,7 @@ from pytest import fixture
 from litai import DataBase, SearchEngine
 
 
-@fixture(scope='session')
+@fixture(scope="session", autouse=True)
 def test_db():
 
     # make db from scratch
@@ -42,3 +42,7 @@ def test_db():
     ).append()
     count1 = SearchEngine('pytest').get_count()
     assert (count1 == count0)
+
+
+def test_dummy():
+    pass
