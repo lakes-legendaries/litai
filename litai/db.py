@@ -117,7 +117,12 @@ class DataBase:
         # create database
         self._insert()
         self._shrink()
-        self._rename(self._articles_table, final_articles_table)
+
+        # rename to primary
+        self._engine.execute(f'DROP TABLE IF EXISTS {final_articles_table}')
+        self._engine.execute(
+            f'RENAME TABLE {self._articles_table} TO {final_articles_table}'
+        )
 
     def append(self, /):
         """Append to existing database"""
@@ -182,37 +187,27 @@ class DataBase:
 
     def _shrink(self, /):
         """Remove entries with repeated PMID from articles table"""
+
+        # get count (for debugging)
         self._preshrink_count = self._engine.execute(
             f'SELECT COUNT(PMID) FROM {self._articles_table}'
         ).fetchall()[0]
-        temp_table = f'{self._articles_table}_temp'
-        self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
+
+        # shrink table
         self._engine.execute(f"""
-            CREATE TEMPORARY TABLE {temp_table}
-            AS SELECT * FROM {self._articles_table}
-            WHERE (PMID, File) IN (
-                SELECT PMID, MAX(File) FROM {self._articles_table}
-                GROUP BY PMID
+            DELETE FROM {self._articles_table}
+            WHERE _ROWID_ NOT IN (
+                SELECT KEEP_ROW FROM (
+                    SELECT MAX(_ROWID_) AS KEEP_ROW FROM {self._articles_table}
+                    GROUP BY PMID
+                ) AS Z
             )
         """)
-        self._rename(temp_table, self._articles_table)
+
+        # get count (for debugging)
         self._postshrink_count = self._engine.execute(
             f'SELECT COUNT(PMID) FROM {self._articles_table}'
         ).fetchall()[0]
-
-    def _rename(self, source: str, dest: str, /):
-        """Rename table
-
-        Parameters
-        ----------
-        source: str
-            source table
-        dest: str
-            destination table
-        """
-        self._engine.execute(f'DROP TABLE IF EXISTS {dest}')
-        self._engine.execute(f'CREATE TABLE {dest} AS SELECT * FROM {source}')
-        self._engine.execute(f'DROP TABLE {source}')
 
     @classmethod
     @retry(tries=60, delay=10)

@@ -196,11 +196,9 @@ class ArticleScorer(SearchEngine):
 
         # move from temp table to std table
         self._engine.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
-        self._engine.execute(f"""
-            CREATE TABLE {self._scores_table}
-            AS SELECT * FROM {temp_table}
-        """)
-        self._engine.execute(f'DROP TABLE {temp_table}')
+        self._engine.execute(
+            f'RENAME TABLE {temp_table} TO {self._scores_table}'
+        )
 
 
 # command-line interface
