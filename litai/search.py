@@ -2,8 +2,7 @@
 
 import os
 from os.path import join
-from random import choices
-from typing import Iterator, Union
+from typing import Generator, Union
 
 from numpy import array
 from pandas import DataFrame, read_sql_query
@@ -226,11 +225,14 @@ class SearchEngine:
         DataFrame
             Articles
         """
-        ids = read_sql_query(
-            f'SELECT PMID FROM {self._articles_table}',
+        pmids = read_sql_query(
+            f"""
+                SELECT PMID FROM {self._articles_table}
+                ORDER BY RAND()
+                LIMIT {count}
+            """,
             con=self._engine,
         )['PMID'].to_numpy()
-        pmids = choices(ids, k=count)
         return read_sql_query(
             f"""
             SELECT
@@ -251,33 +253,47 @@ class SearchEngine:
             con=self._engine,
         )
 
-    def get_all(self, /, chunksize: int = 10000) -> Iterator[DataFrame]:
+    def get_all(
+        self,
+        /,
+        chunksize: int = 10000,
+    ) -> Generator[DataFrame, None,  None]:
         """Get all articles
 
         Parameters
         ----------
         chunksize: int, optional, default=10E3
-            number of articles in each iteration pt of output
+            number of articles in each iteration pt of output. Warning: If this
+            is made very small, this function might stop before the end of the
+            table
 
         Returns
         -------
-        Iterator[DataFrame]
-            Iterator to all articles in database
+        Generator[DataFrame, None, None]
+            Generator to loop through all articles
         """
-        return read_sql_query(
-            f"""
-                SELECT
-                    PMID,
-                    DOI,
-                    Date,
-                    Title,
-                    Abstract,
-                    Keywords
-                FROM {self._articles_table}
-            """,
-            chunksize=chunksize,
-            con=self._engine,
-        )
+        first_row = 0
+        while True:
+            df = read_sql_query(
+                f"""
+                    SELECT
+                        PMID,
+                        DOI,
+                        Date,
+                        Title,
+                        Abstract,
+                        Keywords
+                    FROM {self._articles_table}
+                    WHERE _ROWID_ >= {first_row}
+                    AND _ROWID_ < {first_row + chunksize}
+                """,
+                con=self._engine,
+            )
+            if df.empty:
+                return
+            else:
+                first_row += chunksize
+                yield df
 
     def get_count(self) -> int:
         """Get number of articles in database
