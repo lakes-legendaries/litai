@@ -86,6 +86,7 @@ class DataBase:
         self._abstract_len = 2048
         self._keywords_len = 256
         self._file_len = 128
+        self._abstract_key_len = 1
 
     def create(self, /):
         """Create database, deleting existing"""
@@ -110,7 +111,8 @@ class DataBase:
                 KEY(PMID),
                 KEY(DOI),
                 KEY(Date),
-                KEY(File)
+                KEY(File),
+                KEY(Abstract({self._abstract_key_len}))
             )
         """)
 
