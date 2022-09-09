@@ -263,18 +263,20 @@ class SearchEngine:
         Parameters
         ----------
         chunksize: int, optional, default=10E3
-            number of articles in each iteration pt of output. Warning: If this
-            is made very small, this function might stop before the end of the
-            table
+            number of rows to retrieve for each generator yield. The actual
+            number retrieved could be less, if rows were deleted post-creation
+            (e.g. for repeated article PMIDs).
 
         Returns
         -------
         Generator[DataFrame, None, None]
             Generator to loop through all articles
         """
-        first_row = 0
-        while True:
-            df = read_sql_query(
+        max_row = self._engine.execute(
+            f'SELECT MAX(_ROWID_) FROM {self._articles_table}'
+        ).fetchall()[0][0]
+        for start_row in range(0, max_row, chunksize):
+            yield read_sql_query(
                 f"""
                     SELECT
                         PMID,
@@ -284,16 +286,11 @@ class SearchEngine:
                         Abstract,
                         Keywords
                     FROM {self._articles_table}
-                    WHERE _ROWID_ >= {first_row}
-                    AND _ROWID_ < {first_row + chunksize}
+                    WHERE _ROWID_ >= {start_row}
+                    AND _ROWID_ < {start_row + chunksize}
                 """,
                 con=self._engine,
             )
-            if df.empty:
-                return
-            else:
-                first_row += chunksize
-                yield df
 
     def get_count(self) -> int:
         """Get number of articles in database
