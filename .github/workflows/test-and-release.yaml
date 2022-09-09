@@ -36,7 +36,7 @@ jobs:
       run: |
         OLD_VERSION=$(grep version litai/_version.py | grep -Po "\d+.\d+.\d+")
         NEW_VERSION=$(echo $OLD_VERSION | perl -pe 's/^((\d+\.)*)(\d+)(.*)$/$1.($3+1).$4/e')
-        for file in litai/_version.py; do
+        for file in litai/_version.py setup.py; do
             sed s/$OLD_VERSION/$NEW_VERSION/g $file -i
             git add $file
         done
