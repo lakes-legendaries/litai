@@ -187,9 +187,7 @@ class ArticleScorer(SearchEngine):
             # write running status
             if self._verbose:
                 count += df.shape[0]
-                kcount = int(count / 1000)
-                ktotal = int(total / 1000)
-                print(f'Scored {kcount}k / {ktotal}k articles', end='\r')
+                print(f'Scored {count:,} / {total:,} articles', end='\r')
 
         # newline
         print('')
