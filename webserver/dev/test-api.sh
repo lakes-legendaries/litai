@@ -10,7 +10,7 @@ if [ ! -z "$CONTAINERS" ]; then
 fi
 
 # create temporary dockerfile
-head -16 Dockerfile > Dockerfile.tmp
+head -18 Dockerfile > Dockerfile.tmp
 echo 'CMD [ "uvicorn", "litai.app:app", "--host", "0.0.0.0", "--port", "80" ]' >> Dockerfile.tmp
 
 # rebuild docker image
