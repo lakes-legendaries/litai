@@ -55,58 +55,55 @@ def search(
     }
 
 
-# @app.get("/feedback/{action}")
-# def feedback(
-#     action: str,
-#     pmid: Optional[str] = None,
-#     table: Optional[str] = None,
-#     token: Optional[str] = None,
-# ):
+@app.get('/comment/')
+def comment(
+    pmid: str,
+    token: str,
+    user: str,
+    comment: str,
+    scores_table: Optional[str] = None,
+):
+    SearchEngine()._engine.execute(f"""
+        INSERT INTO comments (
+            Date,
+            PMID,
+            Token,
+            User,
+            {'ScoresTable,' if scores_table else ''}
+            Comment
+        ) VALUES (
+            NOW(),
+            {pmid},
+            {token},
+            {user},
+            {scores_table + ',' if scores_table else ''}
+            {comment}
+        )
+    """)
 
-#     # write feedback to file
-#     fname = datetime.now().isoformat()
-#     with open(fname, 'w') as file:
-#         print(f'action: {action}', file=file)
-#         print(f'pmid: {pmid}', file=file)
-#         print(f'table: {table}', file=file)
-#         print(f'token: {token}', file=file)
 
-#     # authenticate with azure
-#     az_key = 'AZURE_STORAGE_CONNECTION_STRING'
-#     if az_key not in os.environ:
-
-#         # load in azure authentication token
-#         conn_fname = join(os.environ['SECRETS_DIR'], 'litai-fileserver')
-#         if not isfile(conn_fname):
-#             return {
-#                 'Status': 'Failed',
-#                 'Reason': 'Could not authenticate with Azure. '
-#                           f'File {conn_fname} DNE',
-#             }
-
-#         # add to env vars
-#         os.environ[az_key] = open(conn_fname, 'r').read()
-
-#     # upload to azure
-#     run(
-#         [
-#             'az',
-#             'storage',
-#             'blob',
-#             'upload',
-#             '-f',
-#             fname,
-#             '-c',
-#             'feedback',
-#             '-n',
-#             fname,
-#         ],
-#         capture_output=True,
-#         check=True,
-#     )
-
-#     # clean-up
-#     remove(fname)
-
-#     # return success
-#     return {'Status': 'Succeeded'}
+@app.get('/feedback/')
+def feedback(
+    pmid: str,
+    token: str,
+    user: str,
+    scores_table: str,
+    feedback: float,
+):
+    SearchEngine()._engine.execute(f"""
+        INSERT INTO feedback (
+            Date,
+            PMID,
+            Token,
+            User,
+            ScoresTable,
+            Feedback
+        ) VALUES (
+            NOW(),
+            {pmid},
+            {token},
+            {user},
+            {scores_table},
+            {feedback}
+        )
+    """)
