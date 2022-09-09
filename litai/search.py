@@ -189,7 +189,7 @@ class SearchEngine:
         if require_abstract:
             query += f"""
                 {'AND' if has_conditions else 'WHERE'}
-                (Abstract != '')
+                (Abstract IS NOT NULL)
             """
             has_conditions = True
 
