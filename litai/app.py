@@ -19,6 +19,27 @@ app.add_middleware(
 )
 
 
+# sanitize function
+def sanitize(text: str) -> str:
+    """Simple input sanitization
+
+    Parameters
+    ----------
+    text: str
+        input text
+
+    Returns
+    -------
+    str
+        sanitized input text
+    """
+    return (
+        text.replace('"', '`')
+            .replace("'", '`')
+            .replace(';', ',')
+    )
+
+
 @app.get("/")
 def home():
     return {
@@ -37,10 +58,10 @@ def search(
     scores_table: Optional[str] = None,
 ):
     articles = SearchEngine().search(
-        keywords=keywords.split() if keywords else None,
-        max_date=max_date,
-        min_date=min_date,
-        scores_table=scores_table,
+        keywords=sanitize(keywords).split() if keywords else None,
+        max_date=sanitize(max_date),
+        min_date=sanitize(min_date),
+        scores_table=sanitize(scores_table),
     )
     return {
         n: {
@@ -57,7 +78,7 @@ def search(
 
 @app.get('/comment/')
 def comment(
-    pmid: str,
+    pmid: int,
     token: str,
     user: str,
     comment: str,
@@ -74,17 +95,20 @@ def comment(
         ) VALUES (
             NOW(),
             {pmid},
-            {token},
-            {user},
-            {scores_table + ',' if scores_table else ''}
-            {comment}
+            "{sanitize(token)}",
+            "{sanitize(user)}",
+            {f'"{sanitize(scores_table)}",' if scores_table else ''}
+            "{sanitize(comment)}"
         )
     """)
+
+    # return success
+    return {'Status': 'Succeeded'}
 
 
 @app.get('/feedback/')
 def feedback(
-    pmid: str,
+    pmid: int,
     token: str,
     user: str,
     scores_table: str,
@@ -101,9 +125,12 @@ def feedback(
         ) VALUES (
             NOW(),
             {pmid},
-            {token},
-            {user},
-            {scores_table},
-            {feedback}
+            "{sanitize(token)}",
+            "{sanitize(user)}",
+            "{sanitize(scores_table)}",
+            "{feedback}"
         )
     """)
+
+    # return success
+    return {'Status': 'Succeeded'}
