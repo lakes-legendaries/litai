@@ -1,7 +1,10 @@
+import os
+from os.path import join
 from typing import Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pandas import read_sql_query
 
 from litai.search import SearchEngine
 from litai._version import __version__
@@ -17,6 +20,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_origins=["*"],
 )
+
+# load authorized tokens
+authorized_tokens = open(
+    join(
+        os.environ['SECRETS_DIR'],
+        'litai-tokens',
+    ),
+    'r',
+).read().splitlines()
 
 
 # sanitize function
@@ -57,12 +69,37 @@ def search(
     min_date: Optional[str] = None,
     scores_table: Optional[str] = None,
 ):
-    articles = SearchEngine().search(
+    # connect to db
+    se = SearchEngine()
+
+    # pull articles from table
+    articles = se.search(
         keywords=sanitize(keywords).split() if keywords else None,
         max_date=sanitize(max_date),
         min_date=sanitize(min_date),
         scores_table=sanitize(scores_table),
     )
+
+    # pull corresponding comments made with authorized tokens
+    comments = read_sql_query(
+        f"""
+            SELECT * FROM comments
+            WHERE PMID IN ({
+                ", ".join([
+                    f'{pmid}'
+                    for pmid in articles['PMID']
+                ])
+            }) AND Token IN ({
+                ", ".join([
+                    f'"{token}"'
+                    for token in authorized_tokens
+                ])
+            })
+        """,
+        con=se._engine,
+    )
+
+    # return as json
     return {
         n: {
             'PMID': article['PMID'],
@@ -71,6 +108,15 @@ def search(
             'Abstract': article['Abstract'],
             'Date': article['Date'],
             'Score': article['Score'],
+            'Comments': [
+                {
+                    'Date': comment['Date'],
+                    'User': comment['User'],
+                    'Comment': comment['Comment'],
+                }
+                for _, comment in comments.iterrows()
+                if comment['PMID'] == article['PMID']
+            ]
         }
         for n, article in articles.iterrows()
     }
