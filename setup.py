@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
         # standard info
         name='litai',
-        version='0.2.5',
+        version='0.2.6',
         description='ai-powered literature search',
         author='Mike Powell PhD',
         author_email='mike@lakeslegendaries.com',
