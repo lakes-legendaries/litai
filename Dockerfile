@@ -2,7 +2,7 @@ FROM python:3.9-slim
 
 # setup unix
 RUN apt-get update
-RUN apt-get install -y g++ default-libmysqlclient-dev
+RUN apt-get install -y default-libmysqlclient-dev g++ git
 
 # setup python
 RUN pip install --upgrade pip
