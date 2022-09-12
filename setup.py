@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
         # standard info
         name='litai',
-        version='0.1.35',
+        version='0.2.0',
         description='ai-powered literature search',
         author='Mike Powell PhD',
         author_email='mike@lakeslegendaries.com',
@@ -21,12 +21,14 @@ if __name__ == '__main__':
         # requirements
         install_requires=[
             'fastapi',
+            'mysqlclient',
             'nptyping',
             'numpy',
             'pandas',
             'pyyaml',
             'retry',
             'sklearn',
+            'sqlalchemy',
             'uvicorn',
             'vhash',
         ],

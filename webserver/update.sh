@@ -3,31 +3,22 @@
 # exit on error
 set -e
 
-# update litai code
-cd /home/mike/litai
+# run in project root
+cd $(realpath $(dirname $BASH_SOURCE))/..
+
+# check if updates are paused
+if [ -f pause-updates ]; then
+    exit 0
+fi
+
+# update code
+git checkout main
 git pull origin main
 
-# rebuild docker image
-sudo docker build -t litai .
-
-# update pubmed database
-sudo docker run --rm -v $(pwd)/data:/code/data litai \
-    python litai/db.py --append
+# update database
+.venv/bin/python litai/db.py --append 
 
 # update scoring tables
-for TABLE in covid hbot senescence; do
-    sudo docker run \
-        --rm \
-        -v $(pwd)/data:/code/data \
-        -v $(pwd)/config:/code/config \
-        litai \
-        python litai/score.py config/$TABLE.yaml
+for CONFIG_FILE in config/*; do
+    .venv/bin/python litai/score.py $CONFIG_FILE
 done
-
-# upload db and website
-export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
-az storage blob upload -f data/pubmed.db -c data -n pubmed.db --overwrite
-az storage blob upload-batch -s html/ -d \$web --overwrite
-
-# restart api
-/home/mike/litai/webserver/startup.sh

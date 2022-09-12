@@ -20,16 +20,17 @@ class ArticleScorer(SearchEngine):
 
     Parameters
     ----------
-    database: str, optional, default='data/pubmed.db'
-        SQL database
     articles_table: str, optional, default='articles'
         Name of table in :code:`database`
+    connection_str: str, optional, default='litai-mysql'
+        file containing connection string, in directory SECRETS_DIR (defined by
+        environmental variable)
     """
 
     def score(
         self,
         /,
-        scores_table: str = None,
+        scores_table: str,
         pos_pmids: Union[str, list[Union[str, int]]] = None,
         neg_pmids: Union[str, list[Union[str, int]]] = None,
         pos_keywords: Union[list[str], str] = None,
@@ -45,9 +46,8 @@ class ArticleScorer(SearchEngine):
 
         Parameters
         ----------
-        scores_table: str, optional, default=None
-            table to save scores into. If None, then a temporary table will be
-            used.
+        scores_table: str
+            table to save scores into
         pos_pmids: str or list[Union[str, int]], optional, default=None
             Target articles: Similiar articles will be scored highly. If str,
             treat as a filename
@@ -86,11 +86,8 @@ class ArticleScorer(SearchEngine):
         self._keyword_limit = keyword_limit
         self._min_score = min_score
         self._rand_factor = rand_factor
+        self._scores_table = scores_table
         self._verbose = verbose
-
-        # determine whether we're saving scores or using a temporary table
-        self._temp_str = 'TEMPORARY' if not scores_table else ''
-        self._scores_table = scores_table if scores_table else 'SCORES_TABLE'
 
         # execute jobs
         self._fit_model()
@@ -120,10 +117,13 @@ class ArticleScorer(SearchEngine):
         ]
 
         # pull random articles
-        rand_df = self.get_rand(int(
-            self._rand_factor
-            * (pn_dfs[0].shape[0] + pn_dfs[1].shape[0])
-        ))
+        if self._rand_factor:
+            rand_df = self.get_rand(int(
+                self._rand_factor
+                * (pn_dfs[0].shape[0] + pn_dfs[1].shape[0])
+            ))
+        else:
+            rand_df = DataFrame([], columns=pn_dfs[0].columns)
 
         # make labels
         pos_labels = [2] * pn_dfs[0].shape[0]
@@ -151,11 +151,16 @@ class ArticleScorer(SearchEngine):
         """Score all articles in table"""
 
         # create table
-        self._con.execute(f'DROP TABLE IF EXISTS TEMP_{self._scores_table}')
-        self._con.execute(f"""
-            CREATE TEMPORARY TABLE TEMP_{self._scores_table} (
-                PMID str,
-                Score FLOAT
+        temp_table = f'{self._scores_table}_temp'
+        self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
+        self._engine.execute(f"""
+            CREATE TABLE {temp_table} (
+                _ROWID_ INT NOT NULL AUTO_INCREMENT,
+                PMID INT NOT NULL,
+                Score FLOAT NOT NULL,
+                PRIMARY KEY(_ROWID_),
+                KEY(PMID),
+                KEY(Score)
             )
         """)
 
@@ -174,42 +179,24 @@ class ArticleScorer(SearchEngine):
                 if self._min_score is None or score >= self._min_score
             ])
             if score_str:
-                self._con.execute(f"""
-                    INSERT INTO TEMP_{self._scores_table} (PMID, Score)
+                self._engine.execute(f"""
+                    INSERT INTO {temp_table} (PMID, Score)
                     VALUES {score_str}
                 """)
 
             # write running status
             if self._verbose:
                 count += df.shape[0]
-                kcount = int(count / 1000)
-                ktotal = int(total / 1000)
-                print(f'Scored {kcount}k / {ktotal}k articles', end='\r')
+                print(f'Scored {count:,} / {total:,} articles', end='\r')
 
         # newline
         print('')
 
         # move from temp table to std table
-        self._con.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
-        self._con.execute(f"""
-            CREATE {self._temp_str} TABLE {self._scores_table}
-            AS SELECT * FROM TEMP_{self._scores_table}
-        """)
-        self._con.execute(f'DROP TABLE TEMP_{self._scores_table}')
-
-        # create indices
-        for col in ['PMID', 'Score']:
-            self._con.execute(f"""
-                DROP INDEX IF EXISTS {self._scores_table}_{col}
-            """)
-            self._con.execute(f"""
-                CREATE INDEX {self._scores_table}_{col}
-                ON {self._scores_table}({col})
-            """)
-
-        # commit changes
-        if not self._temp_str:
-            self._con.commit()
+        self._engine.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
+        self._engine.execute(
+            f'RENAME TABLE {temp_table} TO {self._scores_table}'
+        )
 
 
 # command-line interface

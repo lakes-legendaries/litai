@@ -5,7 +5,17 @@ set -e
 
 # setup unix
 sudo apt-get update
-sudo apt-get install -y ca-certificates curl git gnupg lsb-release
+sudo apt-get upgrade -y
+sudo apt-get dist-upgrade -y
+sudo apt-get install -y \
+    build-essential \
+    ca-certificates \
+    curl \
+    default-libmysqlclient-dev \
+    g++ \
+    gnupg \
+    lsb-release \
+    software-properties-common \
 
 # access docker repository
 KEYFILE=/usr/share/keyrings/docker-archive-keyring.gpg
@@ -19,9 +29,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=$KEYFILE] \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-# install azure cli
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
 # get ssl/tls certificates for secure https connection
 sudo apt-get install -y snapd
 sudo snap install core
@@ -33,23 +40,43 @@ sudo /usr/bin/certbot certonly \
     --standalone -n --domains litai.eastus.cloudapp.azure.com \
     --agree-tos --email mike@lakeslegendaries.com
 
+# install azure cli
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+# upgrade python
+sudo add-apt-repository -y ppa:deadsnakes/ppa
+sudo apt-get install -y python3.9 python3.9-dev python3.9-venv
+
+# set up basic aliases and environmental variables
+echo "alias python=python3.9" > ~/.bash_aliases
+echo "alias venv=\"source .venv/bin/activate\"" >> ~/.bash_aliases
+echo "export PYTHONPATH=\".:/home/mike/litai\"" >> ~/.bash_aliases
+echo "export SECRETS_DIR=\"/home/mike/secrets\"" >> ~/.bash_aliases
+
 # clone repo
-rm -rfd litai
+rm -rfd ~/litai
 git clone https://github.com/lakes-legendaries/litai.git
 
-# download database and pmid lists
-export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
-az storage blob download -f litai/data/pubmed.db -c data -n pubmed.db
-az storage blob download -f litai/data/senescence_pmids.txt -c data -n senescence_pmids.txt
+# setup python environment
+python3.9 -m venv ~/litai/.venv
+source ~/litai/.venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r ~/litai/requirements.txt
 
-# schedule startup command, and plan monthly reboot
-sudo rm -f /var/spool/cron/crontabs/$USER
-sudo rm -f /var/spool/cron/crontabs/root
-echo "@reboot /home/mike/litai/webserver/startup.sh" | sudo tee /var/spool/cron/crontabs/$USER
-echo "0 4 * * * /home/mike/litai/webserver/update.sh" | sudo tee -a /var/spool/cron/crontabs/$USER
-echo "0 0 1 * * reboot" | sudo tee /var/spool/cron/crontabs/root
-sudo chmod 0600 /var/spool/cron/crontabs/$USER
-sudo chmod 0600 /var/spool/cron/crontabs/root
+# download training data
+export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
+az storage blob download -f /home/mike/litai/data/senescence_pmids.txt -c data -n senescence_pmids.txt
+
+# schedule restart and daily updates
+CRONDIR="/var/spool/cron/crontabs"
+ACTIONSDIR="/home/mike/litai/webserver"
+sudo rm -f $CRONDIR/$USER
+sudo rm -f $CRONDIR/root
+echo "0 4 * * * $ACTIONSDIR/update.sh" | sudo tee $CRONDIR/$USER
+echo "@reboot $ACTIONSDIR/startup.sh" | sudo tee -a $CRONDIR/$USER
+echo "0 0 1 * * reboot" | sudo tee $CRONDIR/root
+sudo chmod 0600 $CRONDIR/$USER
+sudo chmod 0600 $CRONDIR/root
 
 # run startup script
 /home/mike/litai/webserver/startup.sh

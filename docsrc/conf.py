@@ -1,5 +1,8 @@
+from litai._version import __version__
+
+
 project = 'litai'
-version = '0.1.35'
+version = __version__
 copyright = '2021 Lake\'s Legendaries LLC'
 author = 'Mike Powell PhD'
 

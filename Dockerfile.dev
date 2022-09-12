@@ -16,4 +16,6 @@ CMD [ \
 ]
 
 # install litai
-RUN pip install git+https://github.com/lakes-legendaries/litai.git
+WORKDIR /code
+COPY . .
+RUN pip install .

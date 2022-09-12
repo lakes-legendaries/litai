@@ -1,9 +1,12 @@
 """Search Engine"""
-import sqlite3
-from typing import Iterator, Union
+
+import os
+from os.path import join
+from typing import Generator, Union
 
 from numpy import array
 from pandas import DataFrame, read_sql_query
+from sqlalchemy import create_engine
 
 
 class SearchEngine:
@@ -11,23 +14,33 @@ class SearchEngine:
 
     Parameters
     ----------
-    database: str, optional, default='data/pubmed.db'
-        SQL database
     articles_table: str, optional, default='articles'
         Name of table in :code:`database`
+    connection_str: str, optional, default='litai-mysql'
+        file containing connection string, in directory SECRETS_DIR (defined by
+        environmental variable)
     """
     def __init__(
         self,
         /,
-        database: str = 'data/pubmed.db',
         articles_table: str = 'articles',
+        *,
+        connection_str: str = 'litai-mysql',
     ):
         # save passed
         self._articles_table = articles_table
 
-        # connect to database
-        self._database = database
-        self._con = sqlite3.connect(database)
+        # load connection string
+        self._connection_str = open(
+            join(
+                os.environ['SECRETS_DIR'],
+                connection_str,
+            ),
+            'r',
+        ).read().strip()
+
+        # connect to db
+        self._engine = create_engine(self._connection_str)
 
     def search(
         self,
@@ -156,7 +169,7 @@ class SearchEngine:
                 (
                     PMID in ({
                         ", ".join([
-                            f'"{pmid}"'
+                            f'{pmid}'
                             for pmid in pmids
                         ])
                     })
@@ -176,7 +189,7 @@ class SearchEngine:
         if require_abstract:
             query += f"""
                 {'AND' if has_conditions else 'WHERE'}
-                (Abstract != '')
+                (Abstract IS NOT NULL)
             """
             has_conditions = True
 
@@ -187,7 +200,7 @@ class SearchEngine:
             """
         else:
             query += """
-                ORDER BY RANDOM()
+                ORDER BY _ROWID_ DESC
             """
 
         # limit results
@@ -197,7 +210,7 @@ class SearchEngine:
             """
 
         # return matching articles
-        return read_sql_query(query, con=self._con)
+        return read_sql_query(query.replace(r'%', r'%%'), con=self._engine)
 
     def get_rand(self, /, count: int) -> DataFrame:
         """Find random articles
@@ -212,33 +225,72 @@ class SearchEngine:
         DataFrame
             Articles
         """
+        pmids = read_sql_query(
+            f"""
+                SELECT PMID FROM {self._articles_table}
+                ORDER BY RAND()
+                LIMIT {count}
+            """,
+            con=self._engine,
+        )['PMID'].to_numpy()
         return read_sql_query(
             f"""
-            SELECT * FROM {self._articles_table}
-            ORDER BY RANDOM()
-            LIMIT {count}
+            SELECT
+                PMID,
+                DOI,
+                Date,
+                Title,
+                Abstract,
+                Keywords
+            FROM {self._articles_table}
+            WHERE PMID IN ({
+                ", ".join([
+                    f'{pmid}'
+                    for pmid in pmids
+                ])
+            })
             """,
-            con=self._con,
+            con=self._engine,
         )
 
-    def get_all(self, /, chunksize: int = 10000) -> Iterator[DataFrame]:
+    def get_all(
+        self,
+        /,
+        chunksize: int = 10000,
+    ) -> Generator[DataFrame, None,  None]:
         """Get all articles
 
         Parameters
         ----------
         chunksize: int, optional, default=10E3
-            number of articles in each iteration pt of output
+            number of rows to retrieve for each generator yield. The actual
+            number retrieved could be less, if rows were deleted post-creation
+            (e.g. for repeated article PMIDs).
 
         Returns
         -------
-        Iterator[DataFrame]
-            Iterator to all articles in database
+        Generator[DataFrame, None, None]
+            Generator to loop through all articles
         """
-        return read_sql_query(
-            f'SELECT * FROM {self._articles_table}',
-            chunksize=chunksize,
-            con=self._con,
-        )
+        max_row = self._engine.execute(
+            f'SELECT MAX(_ROWID_) FROM {self._articles_table}'
+        ).fetchall()[0][0]
+        for start_row in range(0, max_row, chunksize):
+            yield read_sql_query(
+                f"""
+                    SELECT
+                        PMID,
+                        DOI,
+                        Date,
+                        Title,
+                        Abstract,
+                        Keywords
+                    FROM {self._articles_table}
+                    WHERE _ROWID_ >= {start_row}
+                    AND _ROWID_ < {start_row + chunksize}
+                """,
+                con=self._engine,
+            )
 
     def get_count(self) -> int:
         """Get number of articles in database
@@ -249,4 +301,4 @@ class SearchEngine:
             total number of articles
         """
         query = f'SELECT COUNT(PMID) FROM {self._articles_table}'
-        return self._con.execute(query).fetchone()[0]
+        return self._engine.execute(query).fetchone()[0]
