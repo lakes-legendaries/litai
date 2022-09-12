@@ -33,3 +33,6 @@ for CONFIG_FILE in config/*; do
         litai \
         python -m litai.score $CONFIG_FILE
 done
+
+# restart service
+webserver/run-service.sh
