@@ -30,7 +30,9 @@ jobs:
     - name: Run pytest
       env:
         PYTHONPATH: .
+        SECRETS_DIR: secrets
       run: |
+        mkdir secrets && echo ${{ secrets.LITAI_MYSQL }} > secrets/litai-mysql
         pytest
     - name: Increment version, tag branch
       run: |
