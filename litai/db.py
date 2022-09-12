@@ -88,12 +88,17 @@ class DataBase:
         self._file_len = 128
         self._abstract_key_len = 1
 
+        # corresponding files table
+        self._files_table = self._articles_table + '_files'
+
     def create(self, /):
         """Create database, deleting existing"""
 
         # perform all operations on temporary tables (to keep production up)
         final_articles_table = self._articles_table
+        final_files_table = self._files_table
         self._articles_table += '_refresh'
+        self._files_table = self._files_table + '_refresh'
 
         # create articles table
         self._engine.execute(f'DROP TABLE IF EXISTS {self._articles_table}')
@@ -116,6 +121,17 @@ class DataBase:
             )
         """)
 
+        # create files table
+        self._engine.execute(f'DROP TABLE IF EXISTS {self._files_table}')
+        self._engine.execute(f"""
+            CREATE TABLE {self._files_table} (
+                _ROWID_ INT NOT NULL AUTO_INCREMENT,
+                File VARCHAR({self._file_len}) NOT NULL,
+                PRIMARY KEY(_ROWID_),
+                KEY(File)
+            )
+        """)
+
         # create database
         self._insert()
         self._shrink()
@@ -125,6 +141,10 @@ class DataBase:
         self._engine.execute(
             f'RENAME TABLE {self._articles_table} TO {final_articles_table}'
         )
+        self._engine.execute(f'DROP TABLE IF EXISTS {final_files_table}')
+        self._engine.execute(
+            f'RENAME TABLE {self._files_table} TO {final_files_table}'
+        )
 
     def append(self, /):
         """Append to existing database"""
@@ -133,7 +153,7 @@ class DataBase:
         already_in = [
             row[0]
             for row in self._engine.execute(f"""
-                SELECT DISTINCT(FILE) from {self._articles_table}
+                SELECT DISTINCT(File) from {self._files_table}
             """).fetchall()
         ]
 
@@ -174,11 +194,18 @@ class DataBase:
                 index=False,
             )
 
+            # save file
+            self._engine.execute(f"""
+                INSERT INTO {self._files_table}
+                (File) VALUES ("{server_file}")
+            """)
+
             # write status
             count = self._engine.execute(f"""
                 SELECT MAX(_ROWID_) FROM {self._articles_table}
                 LIMIT 1
             """).fetchone()[0]
+            count = count if count else 0
             print(f'{count:,} articles from {n+1} / {total} files', end='\r')
 
             # clean up
