@@ -15,10 +15,17 @@ fi
 git checkout main
 git pull origin main
 
+# rebuild docker image
+sudo docker build -t litai . --no-cache
+
 # update database
-.venv/bin/python litai/db.py --append 
+sudo docker run litai -v ~/secrets:/secrets \
+    python -m litai.db --append
 
 # update scoring tables
 for CONFIG_FILE in config/*; do
-    .venv/bin/python litai/score.py $CONFIG_FILE
+    sudo docker run litai \
+        -v ~/secrets:/secrets \
+        -v config:config \
+        python -m litai.score $CONFIG_FILE
 done
