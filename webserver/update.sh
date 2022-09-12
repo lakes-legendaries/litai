@@ -3,8 +3,8 @@
 # exit on error
 set -e
 
-# operate in litai directory
-cd /home/mike/litai
+# run in project root
+cd $(realpath $(dirname $BASH_SOURCE))/..
 
 # check if updates are paused
 if [ -f pause-updates ]; then

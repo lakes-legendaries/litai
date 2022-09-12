@@ -29,6 +29,17 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=$KEYFILE] \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
+# get ssl/tls certificates for secure https connection
+sudo apt-get install -y snapd
+sudo snap install core
+sudo snap refresh core
+sudo apt-get remove -y certbot
+sudo snap install --classic certbot
+sudo ln --force -s /snap/bin/certbot /usr/bin/certbot
+sudo /usr/bin/certbot certonly \
+    --standalone -n --domains litai.eastus.cloudapp.azure.com \
+    --agree-tos --email mike@lakeslegendaries.com
+
 # install azure cli
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
@@ -56,10 +67,16 @@ python -m pip install -r ~/litai/requirements.txt
 export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
 az storage blob download -f /home/mike/litai/data/senescence_pmids.txt -c data -n senescence_pmids.txt
 
-# schedule daily updates
-sudo rm -f /var/spool/cron/crontabs/$USER
-sudo rm -f /var/spool/cron/crontabs/root
-echo "0 4 * * * /home/mike/litai/webserver/dev/update.sh" | sudo tee /var/spool/cron/crontabs/$USER
-echo "0 0 1 * * reboot" | sudo tee /var/spool/cron/crontabs/root
-sudo chmod 0600 /var/spool/cron/crontabs/$USER
-sudo chmod 0600 /var/spool/cron/crontabs/root
+# schedule restart and daily updates
+CRONDIR="/var/spool/cron/crontabs"
+ACTIONSDIR="/home/mike/litai/webserver"
+sudo rm -f $CRONDIR/$USER
+sudo rm -f $CRONDIR/root
+echo "0 4 * * * $ACTIONSDIR/update.sh" | sudo tee $CRONDIR/$USER
+echo "@reboot $ACTIONSDIR/startup.sh" | sudo tee -a $CRONDIR/$USER
+echo "0 0 1 * * reboot" | sudo tee $CRONDIR/root
+sudo chmod 0600 $CRONDIR/$USER
+sudo chmod 0600 $CRONDIR/root
+
+# run startup script
+/home/mike/litai/webserver/startup.sh
