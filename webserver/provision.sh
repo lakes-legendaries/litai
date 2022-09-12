@@ -83,7 +83,7 @@ ACTIONSDIR="/home/mike/litai/webserver"
 sudo rm -f $CRONDIR/$USER
 sudo rm -f $CRONDIR/root
 echo "0 4 * * * $ACTIONSDIR/update.sh" | sudo tee $CRONDIR/$USER
-echo "@reboot $ACTIONSDIR/startup.sh" | sudo tee -a $CRONDIR/$USER
+echo "@reboot $ACTIONSDIR/run-service.sh" | sudo tee -a $CRONDIR/$USER
 echo "@reboot /home/mike/actions-runner/run.sh" | sudo tee -a $CRONDIR/$USER
 echo "0 0 1 * * reboot" | sudo tee $CRONDIR/root
 sudo chmod 0600 $CRONDIR/$USER
