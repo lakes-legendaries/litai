@@ -49,7 +49,7 @@ def sanitize(text: str) -> str:
         text.replace('"', '`')
             .replace("'", '`')
             .replace(';', ',')
-    )
+    ) if text is not None else None
 
 
 @app.get("/")
