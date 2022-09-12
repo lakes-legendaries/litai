@@ -19,13 +19,17 @@ git pull origin main
 sudo docker build -t litai . --no-cache
 
 # update database
-sudo docker run litai -v ~/secrets:/secrets \
+sudo docker run \
+    -v ~/secrets:/secrets \
+    litai \
     python -m litai.db --append
 
 # update scoring tables
 for CONFIG_FILE in config/*; do
-    sudo docker run litai \
+    sudo docker run \
         -v ~/secrets:/secrets \
-        -v config:config \
+        -v $(pwd)/config:/code/config \
+        -v $(pwd)/data:/code/data \
+        litai \
         python -m litai.score $CONFIG_FILE
 done
