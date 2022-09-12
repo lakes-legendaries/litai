@@ -1,5 +1,8 @@
 FROM python:3.9-slim
 
+# set workdir
+WORKDIR /code
+
 # setup unix
 RUN apt-get update
 RUN apt-get install -y default-libmysqlclient-dev g++ git wget
