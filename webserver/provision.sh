@@ -67,6 +67,16 @@ python -m pip install -r ~/litai/requirements.txt
 export AZURE_STORAGE_CONNECTION_STRING="$(cat /home/mike/secrets/litai-fileserver)"
 az storage blob download -f /home/mike/litai/data/senescence_pmids.txt -c data -n senescence_pmids.txt
 
+# setup self-hosted runner
+rm -rfd actions-runner
+mkdir actions-runner
+cd actions-runner
+curl -o actions-runner-linux-x64-2.296.1.tar.gz -L https://github.com/actions/runner/releases/download/v2.296.1/actions-runner-linux-x64-2.296.1.tar.gz
+tar xzf ./actions-runner-linux-x64-2.296.1.tar.gz
+./config.sh remove --token AOQ3VBZPEQUMZF3YAWWOA6DDD5D3O
+./config.sh --unattended --url https://github.com/lakes-legendaries/litai --token AOQ3VBZPEQUMZF3YAWWOA6DDD5D3O
+cd ..
+
 # schedule restart and daily updates
 CRONDIR="/var/spool/cron/crontabs"
 ACTIONSDIR="/home/mike/litai/webserver"
@@ -74,9 +84,10 @@ sudo rm -f $CRONDIR/$USER
 sudo rm -f $CRONDIR/root
 echo "0 4 * * * $ACTIONSDIR/update.sh" | sudo tee $CRONDIR/$USER
 echo "@reboot $ACTIONSDIR/startup.sh" | sudo tee -a $CRONDIR/$USER
+echo "@reboot /home/mike/actions-runner/run.sh" | sudo tee -a $CRONDIR/$USER
 echo "0 0 1 * * reboot" | sudo tee $CRONDIR/root
 sudo chmod 0600 $CRONDIR/$USER
 sudo chmod 0600 $CRONDIR/root
 
-# run startup script
-/home/mike/litai/webserver/startup.sh
+# reboot
+sudo reboot
