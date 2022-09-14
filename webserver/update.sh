@@ -25,14 +25,12 @@ sudo docker run \
     python -m litai.db --append
 
 # update scoring tables
-for CONFIG_FILE in config/*; do
-    sudo docker run \
-        -v ~/secrets:/secrets \
-        -v $(pwd)/config:/code/config \
-        -v $(pwd)/data:/code/data \
-        litai \
-        python -m litai.score $CONFIG_FILE
-done
+sudo docker run \
+    -v ~/secrets:/secrets \
+    -v $(pwd)/config:/code/config \
+    -v $(pwd)/data:/code/data \
+    litai \
+    python -m litai.score config/std.yaml
 
 # restart service
 webserver/run-service.sh

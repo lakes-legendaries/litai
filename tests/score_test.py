@@ -9,9 +9,12 @@ def test_scoring():
     def score_fun():
         scorer = ArticleScorer('pytest')
         scorer.score(
-            scores_table='pytest_scores',
-            pos_keywords='mouse',
-            neg_keywords='fish',
+            {
+                'pytest_scores': {
+                    'pos_keywords': 'mouse',
+                    'neg_keywords': 'fish',
+                },
+            },
             min_score=None,
             rand_factor=0,
         )

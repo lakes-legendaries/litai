@@ -1,0 +1,14 @@
+covid: {
+  pos_keywords: [
+    covid,
+  ]
+}
+hbot: {
+  pos_keywords: [
+    hbot,
+    hyperbaric oxygen,
+  ]
+}
+senescence: {
+  pos_pmids: data/senescence_pmids.txt,
+}

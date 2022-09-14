@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from argparse import ArgumentParser
-from os.path import basename
 from random import sample
 from typing import Union
 
@@ -30,11 +29,7 @@ class ArticleScorer(SearchEngine):
     def score(
         self,
         /,
-        scores_table: str,
-        pos_pmids: Union[str, list[Union[str, int]]] = None,
-        neg_pmids: Union[str, list[Union[str, int]]] = None,
-        pos_keywords: Union[list[str], str] = None,
-        neg_keywords: Union[list[str], str] = None,
+        config: dict[str, dict[str, Union[str, list]]],
         *,
         downsample: int = 3000,
         keyword_limit: int = 3000,
@@ -46,18 +41,42 @@ class ArticleScorer(SearchEngine):
 
         Parameters
         ----------
-        scores_table: str
-            table to save scores into
-        pos_pmids: str or list[Union[str, int]], optional, default=None
-            Target articles: Similiar articles will be scored highly. If str,
-            treat as a filename
-        neg_pmids: str or list[Union[str, int]], optional, default=None
-            Non-target articles: Similiar articles will be scored lowly. If
-            str, treat as a filename
-        pos_keywords: Union[str, list[str]], optional, default=None
-            pull articles with any of these keywords as positive articles
-        neg_keywords: Union[str, list[str]], optional, default=None
-            pull articles with any of these keywords as negative articles
+        config: dict[str, dict[str, Union[str, list]]]
+            Configurations to run, of the form
+
+            .. code-block:: python
+
+               config: {
+                   scores_table_0: {
+                       pos_pmids: Union[str, list[Union[str, int]]] = None,
+                       neg_pmids: Union[str, list[Union[str, int]]] = None,
+                       pos_keywords: Union[list[str], str] = None,
+                       neg_keywords: Union[list[str], str] = None,
+                   }
+                   scores_table_1: {
+                       ...
+                   }
+                   ...
+
+            where:
+
+            .. code-block:: numpy
+
+               scores_table_n: str
+                   name of the table to save scores into
+               pos_pmids: str or list[Union[str, int]], optional, default=None
+                   PMIDs for target articles: Similiar articles will be scored
+                   highly. If str, treat as a filename
+               neg_pmids: str or list[Union[str, int]], optional, default=None
+                   PMIDs for non-target articles: Similiar articles will be
+                   scored lowly. If str, treat as a filename
+               pos_keywords: Union[str, list[str]], optional, default=None
+                   pull articles with any of these keywords as positive
+                   articles
+               neg_keywords: Union[str, list[str]], optional, default=None
+                   pull articles with any of these keywords as negative
+                   articles
+
         downsample: int, optional, default=3000
             If not None, then downsample df to have this max number of rows
         keyword_limit: int, optional, default=3000
@@ -65,55 +84,77 @@ class ArticleScorer(SearchEngine):
         min_score: float, optional, default=0
             Minimum score to be included in spinoff table
         rand_factor: float, optional, default=3
-            Pull a number of random articles to include in the model, equal to
+            Pull a number of random articles to include in each model, equal to
             :code:`rand_factor * (len(pos_pmids) + len(neg_pmids))`
         verbose: bool, optional, default=False
             Write running status
         """
 
-        # load pmids from file
-        if type(pos_pmids) is str:
-            pos_pmids = open(pos_pmids, 'r').read().splitlines()
-        if type(neg_pmids) is str:
-            neg_pmids = open(neg_pmids, 'r').read().splitlines()
-
         # save passed
-        self._pos_pmids = pos_pmids
-        self._neg_pmids = neg_pmids
-        self._pos_keywords = pos_keywords
-        self._neg_keywords = neg_keywords
         self._downsample = downsample
         self._keyword_limit = keyword_limit
         self._min_score = min_score
         self._rand_factor = rand_factor
-        self._scores_table = scores_table
         self._verbose = verbose
 
-        # execute jobs
-        self._fit_model()
-        self._score_articles()
+        # train models
+        models = [
+            self._fit_model(c)
+            for c in config.values()
+        ]
 
-    def _fit_model(self):
-        """Fit model for scoring articles"""
+        # score articles
+        self._score_articles(list(config.keys()), models)
+
+    def _fit_model(
+        self,
+        config: dict[str, Union[str, list]],
+        /,
+    ) -> TokenRegressor:
+        """Fit model for scoring articles
+
+        Parameters
+        ----------
+        config: dict[str, Union[str, list]]
+            configuration for any one individual scores table (i.e. one
+            :code:`values()` from :meth:`score`'s :code:`config`).
+
+        Returns
+        -------
+        TokenRegressor
+            Trained model
+        """
+
+        # unpack values, with 0-index as positive, and 1-index as negative
+        pmids = [config.get('pos_pmids'), config.get('neg_pmids')]
+        keywords = [config.get('pos_keywords'), config.get('neg_keywords')]
+
+        # load pmids from file
+        pmids = [
+            open(p, 'r').read().splitlines()
+            if type(p) is str
+            else p
+            for p in pmids
+        ]
 
         # create pos / neg dfs
         pn_dfs = [
             concat((
                 self.search(
-                    pmids=getattr(self, f'_{sign}_pmids'),
+                    pmids=p,
                     limit=None,
                 )
-                if getattr(self, f'_{sign}_pmids') is not None
+                if p
                 else DataFrame(),
                 self.search(
-                    keywords=getattr(self, f'_{sign}_keywords'),
+                    keywords=k,
                     join='OR',
                     limit=self._keyword_limit,
                 )
-                if getattr(self, f'_{sign}_keywords') is not None
+                if k
                 else DataFrame(),
             ))
-            for sign in ['pos', 'neg']
+            for p, k in zip(pmids, keywords)
         ]
 
         # pull random articles
@@ -144,59 +185,75 @@ class ArticleScorer(SearchEngine):
         if self._verbose:
             print(f'Training on {df.shape[0]} articles')
 
-        # fit model
-        self._model = TokenRegressor().fit(df, labels)
+        # return trained model
+        return TokenRegressor().fit(df, labels)
 
-    def _score_articles(self):
-        """Score all articles in table"""
+    def _score_articles(
+        self,
+        /,
+        scores_tables: list[str],
+        models: list[TokenRegressor],
+    ):
+        """Score all articles in table
 
-        # create table
-        temp_table = f'{self._scores_table}_temp'
-        self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
-        self._engine.execute(f"""
-            CREATE TABLE {temp_table} (
-                _ROWID_ INT NOT NULL AUTO_INCREMENT,
-                PMID INT NOT NULL,
-                Score FLOAT NOT NULL,
-                PRIMARY KEY(_ROWID_),
-                KEY(PMID),
-                KEY(Score)
-            )
-        """)
+        Parameters
+        ----------
+        scores_tables: list[str[
+            names of tables to save scores into
+        models: list[TokenRegressor]
+            trained models to use to score articles
+        """
+
+        # create temporary tables
+        temp_tables = [
+            f'{scores_table}_temp'
+            for scores_table in scores_tables
+        ]
+        for temp_table in temp_tables:
+            self._engine.execute(f'DROP TABLE IF EXISTS {temp_table}')
+            self._engine.execute(f"""
+                CREATE TABLE {temp_table} (
+                    _ROWID_ INT NOT NULL AUTO_INCREMENT,
+                    PMID INT NOT NULL,
+                    Score FLOAT NOT NULL,
+                    PRIMARY KEY(_ROWID_),
+                    KEY(PMID),
+                    KEY(Score)
+                )
+            """)
 
         # score articles
         count = 0
         total = self.get_count()
         for df in self.get_all():
+            for temp_table, model in zip(temp_tables, models):
 
-            # get scores
-            scores = self._model.predict(df)
+                # get scores
+                scores = model.predict(df)
 
-            # add to table
-            score_str = ', '.join([
-                f'({pmid}, {score})'
-                for pmid, score in zip(df['PMID'], scores)
-                if self._min_score is None or score >= self._min_score
-            ])
-            if score_str:
-                self._engine.execute(f"""
-                    INSERT INTO {temp_table} (PMID, Score)
-                    VALUES {score_str}
-                """)
+                # add to table
+                scores_str = ', '.join([
+                    f'({pmid}, {score})'
+                    for pmid, score in zip(df['PMID'], scores)
+                    if self._min_score is None or score >= self._min_score
+                ])
+                if scores_str:
+                    self._engine.execute(f"""
+                        INSERT INTO {temp_table} (PMID, Score)
+                        VALUES {scores_str}
+                    """)
 
             # write running status
             if self._verbose:
                 count += df.shape[0]
-                print(f'Scored {count:,} / {total:,} articles', end='\r')
+                print(f'Scored {count:,} / {total:,} articles')
 
-        # newline
-        print('')
-
-        # move from temp table to std table
-        self._engine.execute(f'DROP TABLE IF EXISTS {self._scores_table}')
-        self._engine.execute(
-            f'RENAME TABLE {temp_table} TO {self._scores_table}'
-        )
+        # move from temp tables to std tables
+        for temp_table, scores_table in zip(temp_tables, scores_tables):
+            self._engine.execute(f'DROP TABLE IF EXISTS {scores_table}')
+            self._engine.execute(
+                f'RENAME TABLE {temp_table} TO {scores_table}'
+            )
 
 
 # command-line interface
@@ -204,19 +261,17 @@ if __name__ == '__main__':
 
     # parse command line
     parser = ArgumentParser(
-        description='Score articles, spin off new database',
+        description='Score articles',
     )
     parser.add_argument(
-        'config',
-        help='Configuration File'
+        '--config',
+        default='config/std.yaml',
+        help='Configuration File',
     )
     args = parser.parse_args()
 
     # read config from file
     config = yaml.safe_load(open(args.config, 'r'))
 
-    # auto-deduce name of scores table
-    config['scores_table'] = basename(args.config).split('.')[0]
-
     # run article scorer
-    ArticleScorer().score(**config)
+    ArticleScorer().score(config)
