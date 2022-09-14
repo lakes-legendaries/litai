@@ -21,6 +21,8 @@ sudo docker build -t litai . --no-cache
 # update database
 sudo docker run \
     -v ~/secrets:/secrets \
+    --memory 4g \
+    --cpus 1 \
     litai \
     python -m litai.db --append
 
@@ -29,6 +31,8 @@ sudo docker run \
     -v ~/secrets:/secrets \
     -v $(pwd)/config:/code/config \
     -v $(pwd)/data:/code/data \
+    --memory 4g \
+    --cpus 1 \
     litai \
     python -m litai.score config/std.yaml
 
