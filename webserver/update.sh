@@ -34,7 +34,7 @@ sudo docker run \
     --memory 4g \
     --cpus 1 \
     litai \
-    python -m litai.score config/std.yaml
+    python -m litai.score
 
 # restart service
 webserver/run-service.sh
