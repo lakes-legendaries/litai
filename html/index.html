@@ -5,73 +5,82 @@
 <head>
     <link rel="icon" type="image/png" href="icon.png" />
     <link rel="stylesheet" type="text/css" href="style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:wght@300&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Source+Sans+Pro:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
 <!-- Search Box -->
-<div class="centered">
-<div class="boxed"> 
+<div class="searchbox-wrapper centered">
+<div class="boxed search"> 
 <div class="padding">
-<p class="h1">MAXLIT</p>
-<p class="h2">AI-Powered Literature Search</p>
-<div class="centered">
+<p class="h1">Maxlit<span class="red">.</span></p>
+<p class="h2">An AI-Powered Literature Search</p>
+<div class="centered"><div class="search-wrapper">
     
     <!-- Keywords -->
     <label class="p1">Keywords (Optional): </label>
     <br/>
     <input type="text" name="keywords" id="keywords">
     <br />
+	
+	<div class="dropdown-wrapper">
 
-    <!-- Date -->
-    <label class="p1">Since: </label>
-    <br/>
-    <input type="date" name="min_date" id="min_date">
-    <br />
-    <label class="p1">Until: </label>
-    <br />
-    <input type="date" name="max_date" id="max_date">
-    <br />
+		<div>
+			<label class="p1">Since: </label>
+			<br/>
+			<input type="date" name="min_date" id="min_date">
+		</div>
+		<div>
+			<label class="p1">Until: </label>
+			<br />
+			<input type="date" name="max_date" id="max_date">
+		</div>
 
-    <!-- Table -->
-    <label class="p1">Table: </label>
-    <br />
-    <select class="select" id="table_selection" name="table">
-        <option value="senescence">Longevity</option>
-        <option value="hbot">Hyperbaric Oxygen</option>
-        <option value="covid">COVID-19</option>
-    </select>
-    <br />
+		<div>
+		<label class="p1">Table: </label>
+		<select class="select" id="table_selection" name="table">
+			<option value="senescence">Longevity</option>
+			<option value="hbot">Hyperbaric Oxygen</option>
+			<option value="covid">COVID-19</option>
+		</select>
+		</div>
+		<div>
+			<!-- Search Button -->
+			<label class="p1">&nbsp;&nbsp;</label>
+			<button class="button" onclick="query_api()">
+				Search
+			</button>
+		</div>
+	</div>
 
-    <!-- Search Button -->
-    <button class="button" onclick="query_api()">
-        Search
-    </button>
-    <br />
-</div>
+
+</div></div>
 </div>
 </div>
 </div>
 
 <!-- Results -->
-<div class="centered">
-<div class="boxed" id="results-box" style="display: none">
-<div class="padding">
-<div class="justified">
-<div id="results">
-</div>
-</div>
-</div>
-</div>
+<div id="results-wrapper">
+	<div class="centered">
+	<div class="boxed" id="results-box" style="display: none">
+	<div class="padding">
+	<div class="justified">
+	<div id="results">
+	</div>
+	</div>
+	</div>
+	</div>
+	</div>
 </div>
 
 <!-- Attribution -->
 <div class="centered">
 <p class="p3">Developed by Michael Powell PhD</p>
 <p class="p3">Copyright &copy; 2022 Lake's Legendaries LLC</p>
+<div class="spacer"></div>
 </div>
 
 <!-- Load JS -->
