@@ -80,6 +80,10 @@ def search(
         scores_table=sanitize(scores_table),
     )
 
+    # return, if empty
+    if articles.shape[0] == 0:
+        return {}
+
     # pull corresponding comments made with authorized tokens
     comments = read_sql_query(
         f"""
