@@ -53,6 +53,7 @@ function query_api() {
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const token = urlParams.get("token");
+const user = urlParams.get("user");
 
 /* Show results*/
 function show_results(request) {
@@ -117,13 +118,15 @@ function show_results(request) {
 /* Offer feedback */
 function feedback(action, pmid) {
     var request = new XMLHttpRequest();
-    const url = "https://litai.eastus.cloudapp.azure.com/feedback/" + action
+    const url = "https://litai.eastus.cloudapp.azure.com/feedback/"
         + "?pmid=" + pmid
-        + "&table=" + document.getElementById("table_selection").value
-        + "&token=" + token;
+        + "&token=" + token
+        + "&user=" + user
+        + "&scores_table=" + document.getElementById("table_selection").value
+        + "&feedback=" + (action == 'accept'? 1: 0);
     request.open("GET", url, true);
     request.send(null);
-    document.getElementById("feedback_" + pmid).textContent += "Thanks! Feedback saved.";
+    document.getElementById("feedback_" + pmid).textContent += "\n\nThanks! Feedback saved.";
 }
 
 /* Query API on Startup */
