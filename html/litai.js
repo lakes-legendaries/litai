@@ -87,11 +87,21 @@ function show_results(request) {
         html += json[field]["Abstract"];
         html += "</p>";
 
+        // show comments
+        for (let g = 0; g < json[field]["Comments"].length; g++) {
+            comments = json[field]["Comments"][g];
+            html += "<div class='pcomment'>"
+            html += "<p class=p2>" + comments["Comment"] + "</p>";
+            html += "<p class='p3 right'>" + comments["User"] + "</p3>";
+            html += "</div>";
+        }
+
         // offer feedback options
         if (token != null) {
             accept_target = "feedback('accept', " + json[field]["PMID"] + ")";
             reject_target = "feedback('reject', " + json[field]["PMID"] + ")";
             comment_target = "comment(" + json[field]["PMID"] + ")";
+            html += "<div>"
             html += "<a class=\"p2\" onclick=\"" + accept_target + "\">";
             html += "<u>Accept Article</u>";
             html += "</a>";
@@ -104,6 +114,7 @@ function show_results(request) {
             html += "<textarea placeholder='Leave a Comment...' id=\"comment_" + json[field]["PMID"] + "\"></textarea>";
             html += "<button class='button button2' onclick=\"" + comment_target + "\">Submit Comment</button>";
             html += "</br>";
+            html += "</div>"
         }
 
         // mark that article(s) have been found
@@ -144,7 +155,8 @@ function comment(pmid) {
         + "&comment=" + document.getElementById("comment_" + pmid).value;
     request.open("GET", url, true);
     request.send(null);
-    document.getElementById("feedback_" + pmid).textContent += "\n\nThanks! Feedback saved.";
+    document.getElementById("comment_" + pmid).value = "";
+    document.getElementById("comment_" + pmid).placeholder = "Submitted!";
 }
 
 /* Query API on Startup */
