@@ -91,14 +91,19 @@ function show_results(request) {
         if (token != null) {
             accept_target = "feedback('accept', " + json[field]["PMID"] + ")";
             reject_target = "feedback('reject', " + json[field]["PMID"] + ")";
+            comment_target = "comment(" + json[field]["PMID"] + ")";
             html += "<a class=\"p2\" onclick=\"" + accept_target + "\">";
             html += "<u>Accept Article</u>";
-            html += "</a>"
+            html += "</a>";
             html += " &middot; ";
             html += "<a class=\"p2\" onclick=\"" + reject_target + "\">";
             html += "<u>Reject Article</u>";
-            html += "</a>"
+            html += "</a>";
+            html += "</br>";
             html += "<p class=\"p2\" id=\"feedback_" + json[field]["PMID"] + "\"></p>";
+            html += "<textarea placeholder='Leave a Comment...' id=\"comment_" + json[field]["PMID"] + "\"></textarea>";
+            html += "<button class='button button2' onclick=\"" + comment_target + "\">Submit Comment</button>";
+            html += "</br>";
         }
 
         // mark that article(s) have been found
@@ -124,6 +129,19 @@ function feedback(action, pmid) {
         + "&user=" + user
         + "&scores_table=" + document.getElementById("table_selection").value
         + "&feedback=" + (action == 'accept'? 1: 0);
+    request.open("GET", url, true);
+    request.send(null);
+    document.getElementById("feedback_" + pmid).textContent += "\n\nThanks! Feedback saved.";
+}
+
+function comment(pmid) {
+    var request = new XMLHttpRequest();
+    const url = "https://litai.eastus.cloudapp.azure.com/comment/"
+        + "?pmid=" + pmid
+        + "&token=" + token
+        + "&user=" + user
+        + "&scores_table=" + document.getElementById("table_selection").value
+        + "&comment=" + document.getElementById("comment_" + pmid).value;
     request.open("GET", url, true);
     request.send(null);
     document.getElementById("feedback_" + pmid).textContent += "\n\nThanks! Feedback saved.";
