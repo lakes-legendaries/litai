@@ -88,12 +88,14 @@ function show_results(request) {
         html += "</p>";
 
         // show comments
-        for (let g = 0; g < json[field]["Comments"].length; g++) {
-            comments = json[field]["Comments"][g];
-            html += "<div class='pcomment'>"
-            html += "<p class=p2>" + comments["Comment"] + "</p>";
-            html += "<p class='p3 right'>" + comments["User"] + "</p3>";
-            html += "</div>";
+        if (token != null) {
+            for (let g = 0; g < json[field]["Comments"].length; g++) {
+                comments = json[field]["Comments"][g];
+                html += "<div class='pcomment'>"
+                html += "<p class=p2>" + comments["Comment"] + "</p>";
+                html += "<p class='p3 right'>" + comments["User"] + "</p3>";
+                html += "</div>";
+            }
         }
 
         // offer feedback options
