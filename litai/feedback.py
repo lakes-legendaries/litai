@@ -16,13 +16,11 @@ if __name__ == '__main__':
                 _ROWID_ INT NOT NULL AUTO_INCREMENT,
                 Date DATETIME,
                 PMID INT NOT NULL,
-                Token VARCHAR(64) NOT NULL,
                 User VARCHAR(32) NOT NULL,
                 ScoresTable VARCHAR(32) NOT NULL,
                 Feedback FLOAT NOT NULL,
                 PRIMARY KEY(_ROWID_),
                 KEY(PMID),
-                KEY(Token),
                 KEY(User),
                 KEY(ScoresTable),
                 KEY(Feedback)
