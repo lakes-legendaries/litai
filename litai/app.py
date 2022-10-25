@@ -1,6 +1,4 @@
 from hashlib import sha512
-import os
-from os.path import join
 from datetime import datetime
 from secrets import token_urlsafe
 from typing import Optional
@@ -24,17 +22,8 @@ app.add_middleware(
     allow_origins=["*"],
 )
 
-# load authorized tokens
-authorized_tokens = open(
-    join(
-        os.environ['SECRETS_DIR'],
-        'litai-tokens',
-    ),
-    'r',
-).read().splitlines()
 
-
-# sanitize function
+# sanitize inputs
 def sanitize(text: str) -> str:
     """Simple input sanitization
 
@@ -53,6 +42,30 @@ def sanitize(text: str) -> str:
             .replace("'", '`')
             .replace(';', ',')
     ) if text is not None else None
+
+
+# verify allowed access
+def authorized_user(session: str) -> str:
+    """Verify if session is valid for an authorized user
+
+    Parameters
+    ----------
+    session: str
+        session token
+
+    Returns
+    -------
+    str
+        authorized username, or None of not an authorized session
+    """
+    user = SearchEngine()._engine.execute(f"""
+        SELECT User from users
+        WHERE Session = '{session}'
+    """).fetchone()
+    if len(user):
+        return user[0]
+    else:
+        return None
 
 
 @app.get("/")
@@ -87,7 +100,7 @@ def search(
     if articles.shape[0] == 0:
         return {}
 
-    # pull corresponding comments made with authorized tokens
+    # pull corresponding comments
     comments = read_sql_query(
         f"""
             SELECT * FROM comments
@@ -95,11 +108,6 @@ def search(
                 ", ".join([
                     f'{pmid}'
                     for pmid in articles['PMID']
-                ])
-            }) AND Token IN ({
-                ", ".join([
-                    f'"{token}"'
-                    for token in authorized_tokens
                 ])
             })
         """,
@@ -117,6 +125,7 @@ def search(
             'Score': article['Score'],
             'Comments': [
                 {
+                    'ID': comment['_ROWID_'],
                     'Date': comment['Date'],
                     'User': comment['User'],
                     'Comment': comment['Comment'],
@@ -132,68 +141,105 @@ def search(
 @app.get('/comment/')
 def comment(
     pmid: int,
-    token: str,
-    user: str,
     comment: str,
+    session: str,
     scores_table: Optional[str] = None,
 ):
+    if not (user := authorized_user(session)):
+        return {
+            'Status': 'FAILURE',
+            'Reason': 'Unauthorized Session',
+        }
     SearchEngine()._engine.execute(f"""
         INSERT INTO comments (
             Date,
             PMID,
-            Token,
             User,
             {'ScoresTable,' if scores_table else ''}
             Comment
         ) VALUES (
             NOW(),
             {pmid},
-            "{sanitize(token)}",
-            "{sanitize(user)}",
+            "{user}",
             {f'"{sanitize(scores_table)}",' if scores_table else ''}
             "{sanitize(comment)}"
         )
     """)
 
     # return success
-    return {'Status': 'Succeeded'}
+    return {'Status': 'SUCCESS'}
+
+
+@app.get('/delete-comment/')
+def delete_comment(
+    id: int,
+    session: str,
+):
+    if not (user := authorized_user(session)):
+        return {
+            'Status': 'FAILURE',
+            'Reason': 'Unauthorized Session',
+        }
+    SearchEngine()._engine.execute(f"""
+        DELETE FROM comments
+        WHERE user = '{user}'
+            AND _ROWID_ = {id}
+    """)
+
+    # return success
+    return {'Status': 'SUCCESS'}
 
 
 @app.get('/feedback/')
 def feedback(
     pmid: int,
-    token: str,
-    user: str,
     scores_table: str,
     feedback: float,
+    session: str,
 ):
+    if not (user := authorized_user(session)):
+        return {
+            'Status': 'FAILURE',
+            'Reason': 'Unauthorized Session',
+        }
     SearchEngine()._engine.execute(f"""
         INSERT INTO feedback (
             Date,
             PMID,
-            Token,
             User,
             ScoresTable,
             Feedback
         ) VALUES (
             NOW(),
             {pmid},
-            "{sanitize(token)}",
-            "{sanitize(user)}",
+            "{user}",
             "{sanitize(scores_table)}",
             "{feedback}"
         )
     """)
 
     # return success
-    return {'Status': 'Succeeded'}
+    return {'Status': 'SUCCESS'}
 
 
-@app.get('/login/')
-def session(
+def check_password(
     user: str,
     password: str,
-):
+) -> dict:
+    """Check whether user/password combo is valid
+
+    Parameters
+    ----------
+    user: str
+        username
+    password: str
+        password
+
+    Returns
+    -------
+    dict
+        status dictionary
+    """
 
     # sanitize
     user = sanitize(user)
@@ -207,8 +253,7 @@ def session(
         WHERE User = '{user}'
     """).fetchone()[0]:
         return {
-            'token': '',
-            'status': 'FAILURE',
+            'success': False,
             'reason': 'User DNE',
         }
 
@@ -223,12 +268,11 @@ def session(
         and (current_time - last_attempt).seconds < 3
     ):
         return {
-            'token': '',
-            'status': 'FAILURE',
+            'success': False,
             'reason': 'Too many attempts. Wait 3 seconds and try again',
         }
 
-    # log current time as last attempt
+    # log current time as last attempt (regardless of success)
     engine.execute(f"""
         UPDATE users
         SET LastLogin = '{current_time.strftime('%Y-%m-%d %H:%M:%S')}'
@@ -241,19 +285,61 @@ def session(
         WHERE User = '{user}'
     """).fetchone()[0]
     if stored_hash == sha512(str.encode(password)).hexdigest():
-        token = token_urlsafe(1024)
-        engine.execute(f"""
-            UPDATE users
-            SET Session = '{token}'
-            WHERE User = '{user}'
-        """)
-        return {
-            'token': token,
-            'status': 'SUCCESS',
-        }
+        return {'success': True}
     else:
         return {
-            'token': '',
-            'status': 'FAILURE',
+            'success': False,
             'reason': f'Invalid password for user {user}',
         }
+
+
+@app.get('/get-session/')
+def get_session(
+    user: str,
+    password: str,
+):
+    # check password
+    user = sanitize(user)
+    status = check_password(user, password)
+
+    # return failure
+    if not status['success']:
+        return status
+
+    # create session
+    session = token_urlsafe(1024)
+    SearchEngine()._engine.execute(f"""
+        UPDATE users
+        SET Session = '{session}'
+        WHERE User = '{user}'
+    """)
+
+    # return session token
+    status['session'] = session
+    return status
+
+
+@app.get('/change-password/')
+def change_password(
+    user: str,
+    old_password: str,
+    new_password: str,
+):
+    # check password
+    user = sanitize(user)
+    status = check_password(user, old_password)
+
+    # return failure
+    if not status['success']:
+        return status
+
+    # change password
+    hashed = sha512(str.encode(new_password)).hexdigest()
+    SearchEngine()._engine.execute(f"""
+        UPDATE users
+        SET Hash = '{hashed}'
+        WHERE User = '{user}'
+    """)
+
+    # return success
+    return {'success': True}
