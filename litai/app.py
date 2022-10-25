@@ -1,3 +1,4 @@
+from hashlib import sha512
 import os
 from os.path import join
 from datetime import datetime
@@ -187,10 +188,11 @@ def feedback(
     # return success
     return {'Status': 'Succeeded'}
 
+
 @app.get('/login/')
 def session(
     user: str,
-    hashed_password: str,
+    password: str,
 ):
 
     # sanitize
@@ -209,7 +211,7 @@ def session(
             'status': 'FAILURE',
             'reason': 'User DNE',
         }
-    
+
     # limit login attempts (to resist brute-force attacks)
     current_time = datetime.now()
     last_attempt = engine.execute(f"""
@@ -238,7 +240,7 @@ def session(
         SELECT Hash FROM users
         WHERE User = '{user}'
     """).fetchone()[0]
-    if stored_hash == hashed_password:
+    if stored_hash == sha512(str.encode(password)).hexdigest():
         token = token_urlsafe(1024)
         engine.execute(f"""
             UPDATE users
