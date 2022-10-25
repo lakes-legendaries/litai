@@ -1,5 +1,7 @@
 import os
 from os.path import join
+from datetime import datetime
+from secrets import token_urlsafe
 from typing import Optional
 
 from fastapi import FastAPI
@@ -184,3 +186,72 @@ def feedback(
 
     # return success
     return {'Status': 'Succeeded'}
+
+@app.get('/login/')
+def session(
+    user: str,
+    hashed_password: str,
+):
+
+    # sanitize
+    user = sanitize(user)
+
+    # connect to db
+    engine = SearchEngine()._engine
+
+    # check that user exists
+    if not engine.execute(f"""
+        SELECT COUNT(*) FROM users
+        WHERE User = '{user}'
+    """).fetchone()[0]:
+        return {
+            'token': '',
+            'status': 'FAILURE',
+            'reason': 'User DNE',
+        }
+    
+    # limit login attempts (to resist brute-force attacks)
+    current_time = datetime.now()
+    last_attempt = engine.execute(f"""
+        SELECT LastLogin FROM users
+        WHERE User = '{user}'
+    """).fetchone()[0]
+    if (
+        last_attempt is not None
+        and (current_time - last_attempt).seconds < 3
+    ):
+        return {
+            'token': '',
+            'status': 'FAILURE',
+            'reason': 'Too many attempts. Wait 3 seconds and try again',
+        }
+
+    # log current time as last attempt
+    engine.execute(f"""
+        UPDATE users
+        SET LastLogin = '{current_time.strftime('%Y-%m-%d %H:%M:%S')}'
+        WHERE User = '{user}'
+    """)
+
+    # check if password matches
+    stored_hash = engine.execute(f"""
+        SELECT Hash FROM users
+        WHERE User = '{user}'
+    """).fetchone()[0]
+    if stored_hash == hashed_password:
+        token = token_urlsafe(1024)
+        engine.execute(f"""
+            UPDATE users
+            SET Session = '{token}'
+            WHERE User = '{user}'
+        """)
+        return {
+            'token': token,
+            'status': 'SUCCESS',
+        }
+    else:
+        return {
+            'token': '',
+            'status': 'FAILURE',
+            'reason': f'Invalid password for user {user}',
+        }
