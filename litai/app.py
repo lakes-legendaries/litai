@@ -147,8 +147,8 @@ def comment(
 ):
     if not (user := authorized_user(session)):
         return {
-            'Status': 'FAILURE',
-            'Reason': 'Unauthorized Session',
+            'success': False,
+            'reason': 'Unauthorized Session',
         }
     SearchEngine()._engine.execute(f"""
         INSERT INTO comments (
@@ -167,7 +167,7 @@ def comment(
     """)
 
     # return success
-    return {'Status': 'SUCCESS'}
+    return {'success': True}
 
 
 @app.get('/delete-comment/')
@@ -177,7 +177,7 @@ def delete_comment(
 ):
     if not (user := authorized_user(session)):
         return {
-            'Status': 'FAILURE',
+            'success': False,
             'Reason': 'Unauthorized Session',
         }
     SearchEngine()._engine.execute(f"""
@@ -187,7 +187,7 @@ def delete_comment(
     """)
 
     # return success
-    return {'Status': 'SUCCESS'}
+    return {'success': True}
 
 
 @app.get('/feedback/')
@@ -199,8 +199,8 @@ def feedback(
 ):
     if not (user := authorized_user(session)):
         return {
-            'Status': 'FAILURE',
-            'Reason': 'Unauthorized Session',
+            'success': False,
+            'reason': 'Unauthorized Session',
         }
     SearchEngine()._engine.execute(f"""
         INSERT INTO feedback (
@@ -219,7 +219,7 @@ def feedback(
     """)
 
     # return success
-    return {'Status': 'SUCCESS'}
+    return {'success': True}
 
 
 def check_password(
