@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickstart &mdash; litai  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="LitAI: AI-Powered PubMed Literature Search" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> litai
+          </a>
+              <div class="version">
+                0.2.14
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#set-up-your-environment">Set up your environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-a-database">Create a Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#provide-training-articles">Provide Training Articles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#score-articles">Score Articles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#query-results">Query Results</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app.html">Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev.html">Contributing to this Repo</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">litai</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Quickstart</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/quickstart.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading"></a></h1>
+<p>All of the programs in this package have an easy command-line interface for
+executing this algorithm’s major functions. Here, we provide a guide for
+quickly running this pipeline.</p>
+<p>Please note that this page is a developer’s guide for running this package’s
+programs locally, and NOT for accessing the API on our webserver.</p>
+<section id="set-up-your-environment">
+<h2>Set up your environment<a class="headerlink" href="#set-up-your-environment" title="Permalink to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For all code samples in this documentation, we’ve aliased
+<code class="code docutils literal notranslate"><span class="pre">python=python3.9</span></code>.</p>
+</div>
+<p>This package requires the unix utilities <code class="code docutils literal notranslate"><span class="pre">wget</span></code> and <code class="code docutils literal notranslate"><span class="pre">g++</span></code>. Once
+you’ve installed those, install the required python packages. We recommend
+using a virtual environment, e.g.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m venv .venv
+<span class="nb">source</span> .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+</pre></div>
+</div>
+</section>
+<section id="create-a-database">
+<h2>Create a Database<a class="headerlink" href="#create-a-database" title="Permalink to this heading"></a></h2>
+<p>You’ll need to create a local mirror of PubMed as a SQLite database. This code
+is default-configured to grab every article published since 2010, and will take
+several hours to run.</p>
+<p>To create your database, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python litai/db.py --create
+</pre></div>
+</div>
+<p>Results will be saved as <code class="code docutils literal notranslate"><span class="pre">data/pubmed.db</span></code></p>
+</section>
+<section id="provide-training-articles">
+<h2>Provide Training Articles<a class="headerlink" href="#provide-training-articles" title="Permalink to this heading"></a></h2>
+<p>To train this algorithm, you must provide it with examples of the kinds of
+articles you want it to find. You can do this by specifying four different
+quantities:</p>
+<ol class="arabic simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">pos_pmids</span></code>: Representative of articles you want. Ideally, there
+should be 10s-100s of these. You should always provide this and/or
+<code class="code docutils literal notranslate"><span class="pre">pos_keywords</span></code></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">neg_pmids</span></code>: Representative of articles you DON’T want. This is
+optional, but improves results.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">pos_keywords</span></code>: Include as a <code class="code docutils literal notranslate"><span class="pre">pos_pmid</span></code> all articles that match
+any of these keywords. It’s OK to include only a few, or many, keywords.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">neg_keywords</span></code>: Include as a <code class="code docutils literal notranslate"><span class="pre">neg_pmid</span></code> all articles that match
+any of these keywords. This is optional, but improves results.</p></li>
+</ol>
+<p>Provide this list as a <code class="code docutils literal notranslate"><span class="pre">my_articles.yaml</span></code> file. Here’s a sample:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">pos_pmids</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10337457</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">11891847</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12028221</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
+<span class="nt">neg_pmids</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24584157</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24643567</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">75384168</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
+<span class="nt">pos_keywords</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hbot</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hyperbaric oxygen</span><span class="w"></span>
+<span class="nt">neg_keywords</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mouse</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fish</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="score-articles">
+<h2>Score Articles<a class="headerlink" href="#score-articles" title="Permalink to this heading"></a></h2>
+<p>Your next step is to score articles by their relevance to the provided
+articles. The actual scoring is done by the sklearn-compliant
+<a class="reference internal" href="api.html#litai.model.TokenRegressor" title="litai.model.TokenRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">TokenRegressor</span></code></a> class, which is wrapped by the
+<a class="reference internal" href="api.html#litai.score.ArticleScorer" title="litai.score.ArticleScorer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArticleScorer</span></code></a> class.</p>
+<p>Find relevant articles by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python litai/score.py -c my_articles.yaml
+</pre></div>
+</div>
+<p>where <code class="code docutils literal notranslate"><span class="pre">my_articles.yaml</span></code> is your yaml file created in the previous step.
+This will output results to <code class="code docutils literal notranslate"><span class="pre">data/my_articles.db</span></code>.</p>
+</section>
+<section id="query-results">
+<h2>Query Results<a class="headerlink" href="#query-results" title="Permalink to this heading"></a></h2>
+<p>Results can then be queried from this database, e.g. with the
+<a class="reference internal" href="api.html#litai.search.SearchEngine" title="litai.search.SearchEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchEngine</span></code></a> class, e.g.:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+<span class="kn">from</span> <span class="nn">litai</span> <span class="kn">import</span> <span class="n">SearchEngine</span>
+
+
+<span class="c1"># initialize engine</span>
+<span class="n">engine</span> <span class="o">=</span> <span class="n">SearchEngine</span><span class="p">(</span><span class="s1">&#39;data/my_articles.db&#39;</span><span class="p">)</span>
+
+<span class="c1"># get top-scoring 100 articles</span>
+<span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+ <span class="p">)</span>
+
+<span class="c1"># find articles matching all keywords</span>
+<span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+    <span class="n">keywords</span><span class="o">=</span><span class="p">[</span>
+        <span class="s1">&#39;animal&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;research&#39;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+ <span class="p">)</span>
+
+<span class="c1"># find articles since date</span>
+<span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+    <span class="n">keywords</span><span class="o">=</span><span class="p">[</span>
+        <span class="s1">&#39;animal&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;research&#39;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">min_date</span><span class="o">=</span><span class="s1">&#39;2020-01-01&#39;</span><span class="p">,</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+ <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="LitAI: AI-Powered PubMed Literature Search" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 Lake&#39;s Legendaries LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

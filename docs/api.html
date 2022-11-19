@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; litai  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Infrastructure" href="app.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> litai
+          </a>
+              <div class="version">
+                0.2.14
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#articlescorer">ArticleScorer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#database">DataBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#searchengine">SearchEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tokenregressor">TokenRegressor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="app.html">Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev.html">Contributing to this Repo</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">litai</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h1>
+<section id="articlescorer">
+<h2>ArticleScorer<a class="headerlink" href="#articlescorer" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="litai.score.ArticleScorer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">litai.score.</span></span><span class="sig-name descname"><span class="pre">ArticleScorer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">articles_table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'articles'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'litai-mysql'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#litai.score.ArticleScorer" title="Permalink to this definition"></a></dt>
+<dd><p>Score articles, spin off new database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>articles_table: str, optional, default=’articles’</strong></dt><dd><p>Name of table in <code class="code docutils literal notranslate"><span class="pre">database</span></code></p>
+</dd>
+<dt><strong>connection_str: str, optional, default=’litai-mysql’</strong></dt><dd><p>file containing connection string, in directory SECRETS_DIR (defined by
+environmental variable)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#litai.score.ArticleScorer.score" title="litai.score.ArticleScorer.score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">score</span></code></a>(config, *[, downsample, ...])</p></td>
+<td><p>Score articles, spin off new database</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="litai.score.ArticleScorer.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyword_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rand_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#litai.score.ArticleScorer.score" title="Permalink to this definition"></a></dt>
+<dd><p>Score articles, spin off new database</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>config: dict[str, dict[str, Union[str, list]]]</strong></dt><dd><p>Configurations to run, of the form</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span><span class="p">:</span> <span class="p">{</span>
+    <span class="n">scores_table_0</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">pos_pmids</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">neg_pmids</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pos_keywords</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">neg_keywords</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">scores_table_1</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>where:</p>
+<div class="highlight-numpy notranslate"><div class="highlight"><pre><span></span><span class="n">scores_table_n</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">table</span> <span class="n">to</span> <span class="n">save</span> <span class="n">scores</span> <span class="n">into</span>
+<span class="n">pos_pmids</span><span class="p">:</span> <span class="nb">str</span> <span class="ow">or</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">PMIDs</span> <span class="k">for</span> <span class="n">target</span> <span class="n">articles</span><span class="p">:</span> <span class="n">Similiar</span> <span class="n">articles</span> <span class="n">will</span> <span class="n">be</span> <span class="n">scored</span>
+    <span class="n">highly</span><span class="o">.</span> <span class="n">If</span> <span class="nb">str</span><span class="p">,</span> <span class="n">treat</span> <span class="k">as</span> <span class="n">a</span> <span class="n">filename</span>
+<span class="n">neg_pmids</span><span class="p">:</span> <span class="nb">str</span> <span class="ow">or</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">PMIDs</span> <span class="k">for</span> <span class="n">non</span><span class="o">-</span><span class="n">target</span> <span class="n">articles</span><span class="p">:</span> <span class="n">Similiar</span> <span class="n">articles</span> <span class="n">will</span> <span class="n">be</span>
+    <span class="n">scored</span> <span class="n">lowly</span><span class="o">.</span> <span class="n">If</span> <span class="nb">str</span><span class="p">,</span> <span class="n">treat</span> <span class="k">as</span> <span class="n">a</span> <span class="n">filename</span>
+<span class="n">pos_keywords</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">pull</span> <span class="n">articles</span> <span class="k">with</span> <span class="nb">any</span> <span class="n">of</span> <span class="n">these</span> <span class="n">keywords</span> <span class="k">as</span> <span class="n">positive</span>
+    <span class="n">articles</span>
+<span class="n">neg_keywords</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">pull</span> <span class="n">articles</span> <span class="k">with</span> <span class="nb">any</span> <span class="n">of</span> <span class="n">these</span> <span class="n">keywords</span> <span class="k">as</span> <span class="kp">negative</span>
+    <span class="n">articles</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>downsample: int, optional, default=3000</strong></dt><dd><p>If not None, then downsample df to have this max number of rows</p>
+</dd>
+<dt><strong>keyword_limit: int, optional, default=3000</strong></dt><dd><p>Max number of keyword articles to pull</p>
+</dd>
+<dt><strong>min_score: float, optional, default=0</strong></dt><dd><p>Minimum score to be included in spinoff table</p>
+</dd>
+<dt><strong>rand_factor: float, optional, default=3</strong></dt><dd><p>Pull a number of random articles to include in each model, equal to
+<code class="code docutils literal notranslate"><span class="pre">rand_factor</span> <span class="pre">*</span> <span class="pre">(len(pos_pmids)</span> <span class="pre">+</span> <span class="pre">len(neg_pmids))</span></code></p>
+</dd>
+<dt><strong>verbose: bool, optional, default=False</strong></dt><dd><p>Write running status</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="database">
+<h2>DataBase<a class="headerlink" href="#database" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="litai.db.DataBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">litai.db.</span></span><span class="sig-name descname"><span class="pre">DataBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">articles_table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'articles'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'litai-mysql'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2010</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#litai.db.DataBase" title="Permalink to this definition"></a></dt>
+<dd><p>Mirror PubMed database to a mysql server database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>articles_table: str, optional, default=’articles’</strong></dt><dd><p>Name of table in <code class="code docutils literal notranslate"><span class="pre">database</span></code></p>
+</dd>
+<dt><strong>file_list: list[str], optional, default=None</strong></dt><dd><p>List of pubmed baseline and daily update files to use. If None, then
+auto-generate the list by pulling all available files from PubMed.</p>
+</dd>
+<dt><strong>connection_str: str, optional, default=’litai-mysql’</strong></dt><dd><p>file containing connection string, in directory SECRETS_DIR (defined by
+environmental variable)</p>
+</dd>
+<dt><strong>start_year: int, optional, default=201</strong></dt><dd><p>First year to mirror into database</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#litai.db.DataBase.append" title="litai.db.DataBase.append"><code class="xref py py-obj docutils literal notranslate"><span class="pre">append</span></code></a>()</p></td>
+<td><p>Append to existing database</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#litai.db.DataBase.create" title="litai.db.DataBase.create"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create</span></code></a>()</p></td>
+<td><p>Create database, deleting existing</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="litai.db.DataBase.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#litai.db.DataBase.append" title="Permalink to this definition"></a></dt>
+<dd><p>Append to existing database</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="litai.db.DataBase.create">
+<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#litai.db.DataBase.create" title="Permalink to this definition"></a></dt>
+<dd><p>Create database, deleting existing</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="searchengine">
+<h2>SearchEngine<a class="headerlink" href="#searchengine" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="litai.search.SearchEngine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">litai.search.</span></span><span class="sig-name descname"><span class="pre">SearchEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">articles_table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'articles'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'litai-mysql'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#litai.search.SearchEngine" title="Permalink to this definition"></a></dt>
+<dd><p>Search Engine</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>articles_table: str, optional, default=’articles’</strong></dt><dd><p>Name of table in <code class="code docutils literal notranslate"><span class="pre">database</span></code></p>
+</dd>
+<dt><strong>connection_str: str, optional, default=’litai-mysql’</strong></dt><dd><p>file containing connection string, in directory SECRETS_DIR (defined by
+environmental variable)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#litai.search.SearchEngine.get_all" title="litai.search.SearchEngine.get_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all</span></code></a>([chunksize])</p></td>
+<td><p>Get all articles</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#litai.search.SearchEngine.get_count" title="litai.search.SearchEngine.get_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_count</span></code></a>()</p></td>
+<td><p>Get number of articles in database</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#litai.search.SearchEngine.get_rand" title="litai.search.SearchEngine.get_rand"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_rand</span></code></a>(count)</p></td>
+<td><p>Find random articles</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#litai.search.SearchEngine.search" title="litai.search.SearchEngine.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>([keywords, max_date, min_date, ...])</p></td>
+<td><p>Find article by keyword</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="litai.search.SearchEngine.get_all">
+<span class="sig-name descname"><span class="pre">get_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#litai.search.SearchEngine.get_all" title="Permalink to this definition"></a></dt>
+<dd><p>Get all articles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chunksize: int, optional, default=10E3</strong></dt><dd><p>number of rows to retrieve for each generator yield. The actual
+number retrieved could be less, if rows were deleted post-creation
+(e.g. for repeated article PMIDs).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Generator[DataFrame, None, None]</dt><dd><p>Generator to loop through all articles</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="litai.search.SearchEngine.get_count">
+<span class="sig-name descname"><span class="pre">get_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#litai.search.SearchEngine.get_count" title="Permalink to this definition"></a></dt>
+<dd><p>Get number of articles in database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>int</dt><dd><p>total number of articles</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="litai.search.SearchEngine.get_rand">
+<span class="sig-name descname"><span class="pre">get_rand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#litai.search.SearchEngine.get_rand" title="Permalink to this definition"></a></dt>
+<dd><p>Find random articles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>count: int</strong></dt><dd><p>number of articles to pull</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>DataFrame</dt><dd><p>Articles</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="litai.search.SearchEngine.search">
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keywords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores_table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">join</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'AND'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_abstract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#litai.search.SearchEngine.search" title="Permalink to this definition"></a></dt>
+<dd><p>Find article by keyword</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>keywords: Union[str, list[str]], optional, default=None</strong></dt><dd><p>keyword or keywords to use in search</p>
+</dd>
+<dt><strong>max_date: str, optional, default=None</strong></dt><dd><p>maximum date of articles to return</p>
+</dd>
+<dt><strong>min_date: str, optional, default=None</strong></dt><dd><p>minimum date of articles to return</p>
+</dd>
+<dt><strong>pmids: list[Union[str, int]], optional, default=None</strong></dt><dd><p>pubmed ids of articles to return</p>
+</dd>
+<dt><strong>scores_table: str, optional, default=None</strong></dt><dd><p>search for articles from within this table</p>
+</dd>
+<dt><strong>join: str, optional, default=’AND’</strong></dt><dd><p>if <code class="code docutils literal notranslate"><span class="pre">'AND'</span></code>, require that all keywords be present in found
+articles. If <code class="code docutils literal notranslate"><span class="pre">'OR'</span></code>, require that any keyword be present in
+found articles.</p>
+</dd>
+<dt><strong>limit: int, optional, default=30</strong></dt><dd><p>max number of results</p>
+</dd>
+<dt><strong>min_score: float, optional, default=None</strong></dt><dd><p>minimum score to include in results. Ignored if
+<code class="code docutils literal notranslate"><span class="pre">scores_table</span></code> is not provided</p>
+</dd>
+<dt><strong>require_abstract: bool. optional, default=True</strong></dt><dd><p>only pull articles with abstracts</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>DataFrame</dt><dd><p>Matching articles</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="tokenregressor">
+<h2>TokenRegressor<a class="headerlink" href="#tokenregressor" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="litai.model.TokenRegressor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">litai.model.</span></span><span class="sig-name descname"><span class="pre">TokenRegressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">LinearRegression()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#litai.model.TokenRegressor" title="Permalink to this definition"></a></dt>
+<dd><p>Article Ranking Model</p>
+<p>This model uses the vhash package to perform fast vector quantization of
+documents, and then uses an sklearn LinearRegression model to score
+articles.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>model: Any, optional, default=sklearn.linear_model.LinearRegression()</strong></dt><dd><p>Model to use for fitting. Pass initialized (which exposes constructor
+to the calling user), e.g.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tr</span> <span class="o">=</span> <span class="n">TokenRegressor</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">LinearSVR</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mf">1E6</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#litai.model.TokenRegressor.fit" title="litai.model.TokenRegressor.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(X, y)</p></td>
+<td><p>Fit model</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#litai.model.TokenRegressor.predict" title="litai.model.TokenRegressor.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(X)</p></td>
+<td><p>Score articles</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="litai.model.TokenRegressor.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#litai.model.TokenRegressor" title="litai.model.TokenRegressor"><span class="pre">TokenRegressor</span></a></span></span><a class="headerlink" href="#litai.model.TokenRegressor.fit" title="Permalink to this definition"></a></dt>
+<dd><p>Fit model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X: DataFrame</strong></dt><dd><p>Articles to use for fitting</p>
+</dd>
+<dt><strong>y: NDArray[(Any,), float]</strong></dt><dd><p>Label for each article</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="litai.model.TokenRegressor.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#litai.model.TokenRegressor.predict" title="Permalink to this definition"></a></dt>
+<dd><p>Score articles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X: DataFrame</strong></dt><dd><p>Articles to score</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="app.html" class="btn btn-neutral float-right" title="Infrastructure" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 Lake&#39;s Legendaries LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
