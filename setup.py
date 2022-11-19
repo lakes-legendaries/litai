@@ -27,6 +27,7 @@ if __name__ == '__main__':
             'pandas',
             'pyyaml',
             'retry',
+            'scikit-learn',
             'sklearn',
             'sqlalchemy',
             'uvicorn',
