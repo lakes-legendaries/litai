@@ -77,8 +77,28 @@ function query_api() {
 /* Read user token from URL */
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
-const token = urlParams.get("token");
 const user = urlParams.get("user");
+
+/* Delete Comments */
+function delete_comment(id) {
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = async function() {
+        if (request.readyState == XMLHttpRequest.DONE) {
+            response = JSON.parse(request.responseText);
+            if (response["success"]) {
+                document.getElementById("comment_" + id).style.display = null;
+            } else {
+                document.getElementById("comment_" + id).innerHTML += "You can only delete your own comments!";
+            }
+        }
+    }
+    const url = api_url + "delete-comment/"
+        + "?id=" + id
+        + "&session=" + session;
+    console.log(url);
+    request.open("GET", url, true);
+    request.send(null);
+}
 
 /* Show results*/
 function show_results(request) {
@@ -113,18 +133,19 @@ function show_results(request) {
         html += "</p>";
 
         // show comments
-        if (token != null) {
-            for (let g = 0; g < json[field]["Comments"].length; g++) {
-                comments = json[field]["Comments"][g];
-                html += "<div class='pcomment'>"
-                html += "<p class=p2>" + comments["Comment"] + "</p>";
-                html += "<p class='p3 right'>" + comments["User"] + "</p3>";
-                html += "</div>";
+        for (let g = 0; g < json[field]["Comments"].length; g++) {
+            comments = json[field]["Comments"][g];
+            html += "<div class='pcomment' id='comment_" + comments["ID"] + "'>"
+            html += "<p class=p2>" + comments["Comment"] + "</p>";
+            html += "<p class='p3 right'>" + comments["User"];
+            if (session) {
+                html += "&nbsp;&nbsp;-&nbsp;&nbsp<a onclick=\"delete_comment(" + comments["ID"] + ")\"><u>Delete</u></a></p3>";
             }
+            html += "</div>";
         }
 
         // offer feedback options
-        if (token != null) {
+        if (session) {
             accept_target = "feedback('accept', " + json[field]["PMID"] + ")";
             reject_target = "feedback('reject', " + json[field]["PMID"] + ")";
             comment_target = "comment(" + json[field]["PMID"] + ")";
@@ -163,8 +184,7 @@ function feedback(action, pmid) {
     var request = new XMLHttpRequest();
     const url = api_url + "feedback/"
         + "?pmid=" + pmid
-        + "&token=" + token
-        + "&user=" + user
+        + "&session=" + session
         + "&scores_table=" + document.getElementById("table_selection").value
         + "&feedback=" + (action == 'accept'? 1: 0);
     request.open("GET", url, true);
@@ -176,8 +196,7 @@ function comment(pmid) {
     var request = new XMLHttpRequest();
     const url = api_url + "comment/"
         + "?pmid=" + pmid
-        + "&token=" + token
-        + "&user=" + user
+        + "&session=" + session
         + "&scores_table=" + document.getElementById("table_selection").value
         + "&comment=" + document.getElementById("comment_" + pmid).value;
     request.open("GET", url, true);
