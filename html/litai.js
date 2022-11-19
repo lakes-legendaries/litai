@@ -86,7 +86,7 @@ function delete_comment(id) {
         if (request.readyState == XMLHttpRequest.DONE) {
             response = JSON.parse(request.responseText);
             if (response["success"]) {
-                document.getElementById("comment_" + id).style.display = null;
+                document.getElementById("comment_" + id).style.display = 'none';
             } else {
                 document.getElementById("comment_" + id).innerHTML += "You can only delete your own comments!";
             }
@@ -217,10 +217,11 @@ function login() {
             if (response["success"]) {
                 session = response["session"];
                 document.getElementById("login_status").innerHTML = "Success! Redirecting...";
+                query_api();
                 await sleep(3000);
                 open_menu();
                 eraseCookie("session");
-                setCookie("session");
+                setCookie("session", session);
             } else {
                 document.getElementById("login_status").innerHTML = "Error: Invalid username / password. Try again?";
             }
