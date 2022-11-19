@@ -36,7 +36,7 @@ document.getElementById('min_date').valueAsDate = last_week;
 document.getElementById('max_date').valueAsDate = tomorrow;
 
 /* API URL*/
-var api_url = "https://litai.eastus.cloudapp.azure.com:1024/";
+var api_url = "https://litai.eastus.cloudapp.azure.com/";
 
 /* Query API*/
 function query_api() {
