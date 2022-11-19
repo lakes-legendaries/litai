@@ -46,6 +46,7 @@ if __name__ == '__main__':
             CREATE TABLE users (
                 _ROWID_ INT NOT NULL AUTO_INCREMENT,
                 User VARCHAR(32) NOT NULL UNIQUE,
+                Salt TEXT NOT NULL,
                 Hash TEXT NOT NULL,
                 LastLogin DATETIME,
                 Session TEXT,
@@ -56,10 +57,11 @@ if __name__ == '__main__':
         """
     elif args.add_user:
         password = token_urlsafe(512)
-        hashed_password = sha512(str.encode(password)).hexdigest()
+        salt = token_urlsafe(512)
+        hashed_password = sha512(str.encode(salt + password)).hexdigest()
         query = f"""
-            INSERT INTO users (User, Hash)
-            VALUES ('{args.add_user}', '{hashed_password}')
+            INSERT INTO users (User, Salt, Hash)
+            VALUES ('{args.add_user}', '{salt}', '{hashed_password}')
         """
         print(f'Username: {args.add_user}')
         print(f'Password: {password}')

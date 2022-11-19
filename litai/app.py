@@ -257,12 +257,21 @@ def check_password(
             'reason': 'User DNE',
         }
 
-    # limit login attempts (to resist brute-force attacks)
-    current_time = datetime.now()
+    # get last login attempt
     last_attempt = engine.execute(f"""
         SELECT LastLogin FROM users
         WHERE User = '{user}'
     """).fetchone()[0]
+
+    # log current time as last attempt (regardless of success)
+    current_time = datetime.now()
+    engine.execute(f"""
+        UPDATE users
+        SET LastLogin = '{current_time.strftime('%Y-%m-%d %H:%M:%S')}'
+        WHERE User = '{user}'
+    """)
+
+    # limit login attempts (to resist brute-force attacks)
     if (
         last_attempt is not None
         and (current_time - last_attempt).seconds < 3
@@ -272,19 +281,12 @@ def check_password(
             'reason': 'Too many attempts. Wait 3 seconds and try again',
         }
 
-    # log current time as last attempt (regardless of success)
-    engine.execute(f"""
-        UPDATE users
-        SET LastLogin = '{current_time.strftime('%Y-%m-%d %H:%M:%S')}'
-        WHERE User = '{user}'
-    """)
-
     # check if password matches
-    stored_hash = engine.execute(f"""
-        SELECT Hash FROM users
+    stored_hash, salt = engine.execute(f"""
+        SELECT Hash, Salt FROM users
         WHERE User = '{user}'
-    """).fetchone()[0]
-    if stored_hash == sha512(str.encode(password)).hexdigest():
+    """).fetchone()
+    if stored_hash == sha512(str.encode(salt + password)).hexdigest():
         return {'success': True}
     else:
         return {
@@ -333,8 +335,14 @@ def change_password(
     if not status['success']:
         return status
 
+    # get salt
+    salt = SearchEngine()._engine.execute(f"""
+        SELECT Salt FROM users
+        WHERE User = '{user}'
+    """).fetchone()[0]
+
     # change password
-    hashed = sha512(str.encode(new_password)).hexdigest()
+    hashed = sha512(str.encode(salt + new_password)).hexdigest()
     SearchEngine()._engine.execute(f"""
         UPDATE users
         SET Hash = '{hashed}'
