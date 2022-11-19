@@ -56,7 +56,7 @@ if __name__ == '__main__':
             )
         """
     elif args.add_user:
-        password = token_urlsafe(512)
+        password = token_urlsafe(32)
         salt = token_urlsafe(512)
         hashed_password = sha512(str.encode(salt + password)).hexdigest()
         query = f"""
