@@ -155,8 +155,21 @@ input[type=date], select {
 .button:hover{opacity:0.8;}
 
 .button2 {
-    background-color: #eee;
-    color: #000;
+    background-color: #000;
+    border: none;
+    color: #fff;
+    padding: 14px var(--input-width);
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: var(--font-size-p1);
+    margin: var(--margin-tight) 0;
+    cursor: pointer;
+    border-radius: var(--border-radius-sm);
+    width: 45%;
+	font-weight: bold;
+	text-transform:uppercase;letter-spacing:1px;
+	-webkit-transition: all 0.5s ease;-moz-transition: all 0.5s 0.s ease;-ms-transition: all 0.5s 0.5s ease;-o-transition: all 0.5s 0s ease;transition: all 0.5s 0s ease;d
 }
 
 textarea {
@@ -180,6 +193,18 @@ background: linear-gradient(to right,  #efefef 0%,#f9f9f9 50%,#efefef 100%);
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#efefef',GradientType=1 );
 
 }
+
+.bg {
+    background: #bf0d0d;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    opacity: .80;
+    /* display: none; */
+}
+
 #results-wrapper{min-height:300px;position:relative;background:#DA2D19;background: #bf0d0d;
 background: -moz-linear-gradient(left,  #bf0d0d 0%, #df140f 50%, #bf0d0d 100%);
 background: -webkit-linear-gradient(left,  #bf0d0d 0%,#df140f 50%,#bf0d0d 100%);
@@ -218,3 +243,46 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bf0d0d', end
 	.dropdown-wrapper div{width:100%;}
 	.button{margin-bottom:0;}
 }
+
+.login {
+    position: fixed;
+    top: 25%;
+}
+
+.chpwd {
+    position: fixed;
+    top: 50%;
+}
+
+.hidden {
+    display: none;
+}
+
+.container {
+    display: inline-block;
+    cursor: pointer;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+  }
+  
+  .bar1, .bar2, .bar3 {
+    width: 35px;
+    height: 5px;
+    background-color: #333;
+    margin: 6px 0;
+    transition: 0.4s;
+  }
+  
+  /* Rotate first bar */
+  .change .bar1 {
+    transform: translate(0, 11px) rotate(-45deg);
+  }
+  
+  /* Fade out the second bar */
+  .change .bar2 {opacity: 0;}
+  
+  /* Rotate last bar */
+  .change .bar3 {
+    transform: translate(0, -11px) rotate(45deg);
+  }

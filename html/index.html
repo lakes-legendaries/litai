@@ -83,6 +83,35 @@
 <div class="spacer"></div>
 </div>
 
+<!-- Transparency layer -->
+<div class="bg hidden" id="transparency"></div>
+
+<!-- Log In -->
+<div class="centered">
+	<div class="hidden" id="login">
+		<div class="login">
+			<div class="centered">
+				<div class="search-wrapper">
+					<input type="text" name="username" id="username" placeholder="Username">
+					<input type="text" name="password" id="password" placeholder="Password">
+					<input type="text" name="new_password" id="new_password" placeholder="New Password (If Changing Password)">
+					<button class="button2" onclick="login()" id="login_button">Login</button>
+					<button class="button2" onclick="change_password()" id="change_password_button">Change Password</button>
+					</br>
+					<p class="p1" id="login_status"></p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Hamburger -->
+<div class="container" id="hamburger" onclick="open_menu()">
+	<div class="bar1"></div>
+	<div class="bar2"></div>
+	<div class="bar3"></div>
+</div>
+
 <!-- Load JS -->
 <script src="litai.js"></script>
 

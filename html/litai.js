@@ -1,6 +1,31 @@
 /* DEBUGGING */
 var debugging = false;
 
+/* Get last session */
+function setCookie(name,value,days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+function eraseCookie(name) {   
+    document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
+var session = getCookie("session");
+
 /* PRE-FILL DATES */
 var today = new Date()
 var tomorrow = new Date();
@@ -11,13 +36,13 @@ document.getElementById('min_date').valueAsDate = last_week;
 document.getElementById('max_date').valueAsDate = tomorrow;
 
 /* API URL*/
-var api_url = "https://litai.eastus.cloudapp.azure.com/search/";
+var api_url = "https://litai.eastus.cloudapp.azure.com:1024/";
 
 /* Query API*/
 function query_api() {
 
     // get search string
-    var url = api_url;
+    var url = api_url + "search/";
     var has_params = false;
     var elements = ["keywords", "min_date", "max_date"];
     for (const element of elements) {
@@ -136,7 +161,7 @@ function show_results(request) {
 /* Offer feedback */
 function feedback(action, pmid) {
     var request = new XMLHttpRequest();
-    const url = "https://litai.eastus.cloudapp.azure.com/feedback/"
+    const url = api_url + "feedback/"
         + "?pmid=" + pmid
         + "&token=" + token
         + "&user=" + user
@@ -149,7 +174,7 @@ function feedback(action, pmid) {
 
 function comment(pmid) {
     var request = new XMLHttpRequest();
-    const url = "https://litai.eastus.cloudapp.azure.com/comment/"
+    const url = api_url + "comment/"
         + "?pmid=" + pmid
         + "&token=" + token
         + "&user=" + user
@@ -159,6 +184,75 @@ function comment(pmid) {
     request.send(null);
     document.getElementById("comment_" + pmid).value = "";
     document.getElementById("comment_" + pmid).placeholder = "Submitted!";
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function login() {
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = async function() {
+        if (request.readyState == XMLHttpRequest.DONE) {
+            response = JSON.parse(request.responseText);
+            if (response["success"]) {
+                session = response["session"];
+                document.getElementById("login_status").innerHTML = "Success! Redirecting...";
+                await sleep(3000);
+                open_menu();
+                eraseCookie("session");
+                setCookie("session");
+            } else {
+                document.getElementById("login_status").innerHTML = "Error: Invalid username / password. Try again?";
+            }
+        }
+    }
+    const url = api_url + "get-session/"
+        + "?user=" + document.getElementById("username").value
+        + "&password=" + document.getElementById("password").value;
+    request.open("GET", url, true);
+    request.send(null);
+}
+
+function change_password() {
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = async function() {
+        if (request.readyState == XMLHttpRequest.DONE) {
+            response = JSON.parse(request.responseText);
+            if (response["success"]) {
+                session = response["session"];
+                document.getElementById("login_status").innerHTML = "Success! Redirecting...";
+                await sleep(3000);
+                open_menu();
+                eraseCookie("session");
+                setCookie("session");
+            } else {
+                document.getElementById("login_status").innerHTML = "Error: Invalid username / password. Try again?";
+            }
+        }
+    }
+    const url = api_url + "change-password/"
+        + "?user=" + document.getElementById("username").value
+        + "&old_password=" + document.getElementById("password").value
+        + "&new_password=" + document.getElementById("new_password").value;
+    request.open("GET", url, true);
+    request.send(null);
+}
+
+// open menu
+function open_menu() {
+
+    // toggle icon
+    document.getElementById("hamburger").classList.toggle("change");
+
+    // toggle transparency, open login panel
+    if (document.getElementById("transparency").style.display) {
+        document.getElementById("transparency").style.display = null;
+        document.getElementById("login").style.display = null;
+    } else {
+        document.getElementById("transparency").style.display = "block";
+        document.getElementById("login").style.display = "block";
+    }
 }
 
 /* Query API on Startup */
