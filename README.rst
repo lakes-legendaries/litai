@@ -2,6 +2,17 @@
 LitAI: AI-Powered Literature Search
 ###################################
 
+===================
+Deprectation Notice
+===================
+
+This project has been discontinued, and the search engine / API links below will no longer work.
+The code will continue to be hosted here as a code sample to jumpstart future projects.
+
+===============
+Original README
+===============
+
 For the Methuselah Foundation.
 
 This app searches the scientific literature to find articles that are relevant
